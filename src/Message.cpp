@@ -1,5 +1,7 @@
 #include <ice/Message.hpp>
 
+#include <iostream>
+#include <sstream>
 #include <utility>
 
 namespace ice {
@@ -48,5 +50,84 @@ namespace ice {
 	}
 	std::string Message::Note() const {
 		return m_Note;
+	}
+
+	std::string Message::ToString() const {
+		std::ostringstream oss;
+		
+		if (!m_Location.empty()) {
+			oss << m_Location << ": ";
+		}
+
+		switch (m_Type) {
+		case MessageType::Note:
+			oss << "note: ";
+			break;
+
+		case MessageType::Warning:
+			oss << "warning: ";
+			break;
+
+		case MessageType::Error:
+			oss << "error: ";
+			break;
+		}
+
+		oss << m_Description;
+
+		if (!m_Note.empty()) {
+			oss << '\n' << m_Note;
+		}
+
+		return oss.str();
+	}
+}
+
+namespace ice {
+	Messages::Messages(const Messages& messages)
+		: m_Messages(messages.m_Messages) {
+	}
+	Messages::Messages(Messages&& messages) noexcept
+		: m_Messages(std::move(messages.m_Messages)) {
+	}
+
+	Messages& Messages::operator=(const Messages& messages) {
+		m_Messages = messages.m_Messages;
+
+		return *this;
+	}
+	Messages& Messages::operator=(Messages&& messages) noexcept {
+		m_Messages = std::move(messages.m_Messages);
+
+		return *this;
+	}
+
+	void Messages::Clear() noexcept {
+		m_Messages.clear();
+	}
+	bool Messages::IsEmpty() const noexcept {
+		return m_Messages.empty();
+	}
+	bool Messages::HasErrors() const noexcept {
+		for (const Message& message : m_Messages) {
+			if (message.Type() == MessageType::Error) return true;
+		}
+		return false;
+	}
+	void Messages::Print() const {
+		bool isFirst = true;
+		for (const Message& message : m_Messages) {
+			if (isFirst) {
+				isFirst = false;
+			} else {
+				std::cout << '\n';
+			}
+
+			std::cout << message.ToString() << "\n";
+		}
+	}
+
+	void Messages::Add(Message message) {
+		m_Messages.push_back(std::move(message));
 	}
 }
