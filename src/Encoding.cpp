@@ -62,4 +62,29 @@ namespace ice {
 		}
 		return true;
 	}
+
+	char32_t GetCodepoint(const char* begin, int length) noexcept {
+		switch (length) {
+		case 1:
+			return *begin;
+			
+		case 2:
+			return ((static_cast<unsigned char>(*begin) & 0x1F) << 6) +
+				   (static_cast<unsigned char>(*(begin + 1)) & 0x3F);
+
+		case 3:
+			return ((static_cast<unsigned char>(*begin) & 0x0F) << 12) +
+				   ((static_cast<unsigned char>(*(begin + 1)) & 0x3F) << 6) +
+				   (static_cast<unsigned char>(*(begin + 2)) & 0x3F);
+
+		case 4:
+			return ((static_cast<unsigned char>(*begin) & 0x07) << 18) +
+				((static_cast<unsigned char>(*(begin + 1)) & 0x3F) << 12) +
+				((static_cast<unsigned char>(*(begin + 2)) & 0x3F) << 6) +
+				(static_cast<unsigned char>(*(begin + 3)) & 0x3F);
+
+		default:
+			return 0;
+		}
+	}
 }

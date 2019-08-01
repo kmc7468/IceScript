@@ -8,4 +8,6 @@ namespace ice {
 
 	bool IsFullWidth(char32_t character) noexcept;
 	bool IsHalfWidth(char32_t character) noexcept;
+
+	char32_t GetCodepoint(const char* begin, int length) noexcept;
 }

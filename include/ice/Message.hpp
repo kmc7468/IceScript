@@ -42,6 +42,11 @@ namespace ice {
 		std::string ToString() const;
 	};
 
+	std::string CreateMessageLocation(std::size_t line, std::size_t column);
+	std::string CreateMessageLocation(const std::string& source);
+	std::string CreateMessageLocation(const std::string& source, std::size_t line, std::size_t column);
+	std::string CreateMessageNoteLocation(const std::string& source, std::size_t line, std::size_t column, std::size_t length);
+
 	class Messages final {
 	private:
 		std::vector<Message> m_Messages;
@@ -63,5 +68,11 @@ namespace ice {
 		void Print() const;
 
 		void Add(Message message);
+		void AddNote(const std::string& description, const std::string& source, std::size_t line, std::size_t column);
+		void AddNote(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note);
+		void AddWarning(const std::string& description, const std::string& source, std::size_t line, std::size_t column);
+		void AddWarning(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note);
+		void AddError(const std::string& description, const std::string& source, std::size_t line, std::size_t column);
+		void AddError(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note);
 	};
 }

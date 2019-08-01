@@ -1,6 +1,9 @@
 #include <ice/Message.hpp>
 
+#include <ice/Encoding.hpp>
+
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <utility>
 
@@ -84,6 +87,68 @@ namespace ice {
 }
 
 namespace ice {
+	std::string CreateMessageLocation(std::size_t line, std::size_t column) {
+		std::ostringstream oss;
+		oss << line << ':' << column + 1;
+		return oss.str();
+	}
+	std::string CreateMessageLocation(const std::string& source) {
+		return source;
+	}
+	std::string CreateMessageLocation(const std::string& source, std::size_t line, std::size_t column) {
+		std::ostringstream oss;
+		oss << source << ':' << line << ':' << column + 1;
+		return oss.str();
+	}
+	std::string CreateMessageNoteLocation(const std::string& source, std::size_t line, std::size_t column, std::size_t length) {
+		const std::string lineString = std::to_string(line);
+		const std::string emptyLineBar = std::string(lineString.size() + 1, ' ') + '|';
+		const std::string lineBar = lineString + " | ";
+		
+		std::string result;
+		result.reserve(source.size() + lineBar.size() + emptyLineBar.size() * 2 + length + 128);
+		result += emptyLineBar;
+		result += '\n';
+		result += lineBar;
+
+		std::size_t realColumn = column, realLength = length;
+		
+		for (std::size_t i = 0; i < source.size();) {
+			const char c = source[i];
+			const int cLength = GetCodepointLength(source[i]);
+
+			if (c == '\t') {
+				result += "    ";
+				if (i < column) {
+					realColumn += 3;
+				} else {
+					realLength += 3;
+				}
+			} else {
+				result.insert(result.end(), source.begin() + i, source.begin() + i + cLength);
+				if (IsFullWidth(GetCodepoint(source.c_str() + i, cLength))) {
+					if (i < column) {
+						realColumn += 1;
+					}
+					else {
+						realLength += 1;
+					}
+				}
+			}
+
+			i += cLength;
+		}
+
+		result += '\n';
+		result += emptyLineBar;
+		result += std::string(realColumn + 1, ' ');
+		result += std::string(realLength, '^');
+
+		return result;
+	}
+}
+
+namespace ice {
 	Messages::Messages(const Messages& messages)
 		: m_Messages(messages.m_Messages) {
 	}
@@ -129,5 +194,23 @@ namespace ice {
 
 	void Messages::Add(Message message) {
 		m_Messages.push_back(std::move(message));
+	}
+	void Messages::AddNote(const std::string& description, const std::string& source, std::size_t line, std::size_t column) {
+		AddNote(description, source, line, column, "");
+	}
+	void Messages::AddNote(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note) {
+		Add(Message(MessageType::Note, description, CreateMessageLocation(source, line, column), note));
+	}
+	void Messages::AddWarning(const std::string& description, const std::string& source, std::size_t line, std::size_t column) {
+		AddWarning(description, source, line, column, "");
+	}
+	void Messages::AddWarning(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note) {
+		Add(Message(MessageType::Warning, description, CreateMessageLocation(source, line, column), note));
+	}
+	void Messages::AddError(const std::string& description, const std::string& source, std::size_t line, std::size_t column) {
+		AddError(description, source, line, column, "");
+	}
+	void Messages::AddError(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note) {
+		Add(Message(MessageType::Error, description, CreateMessageLocation(source, line, column), note));
 	}
 }
