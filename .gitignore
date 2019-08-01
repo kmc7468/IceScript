@@ -2,6 +2,8 @@ bin/
 test*/
 test*.*
 
+src/Encoding/
+
 # CMake
 CMakeFiles/
 CMakeScripts/

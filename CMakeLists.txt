@@ -10,5 +10,11 @@ include_directories("./include")
 file(GLOB_RECURSE SOURCE_LIST "./src/*.cpp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "./bin")
 
-add_executable(${PROJECT_NAME} ${SOURCE_LIST})
+set(PYTHON3 CACHE STRING "python3")
+
+add_custom_command(OUTPUT "./src/Encoding/EastAsianWidthTable.txt"
+				   COMMAND ${PYTHON3} ./EastAsianWidthTableGenerator.py
+				   WORKING_DIRECTORY "./util")
+
+add_executable(${PROJECT_NAME} ${SOURCE_LIST} "./src/Encoding/EastAsianWidthTable.txt")
 install(TARGETS ${PROJECT_NAME} DESTINATION "bin")
