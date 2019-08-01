@@ -49,7 +49,7 @@ if res.getcode() == 200:
 	file = open("../src/Encoding/EastAsianWidthTable.txt", "w")
 	
 	for element in data:
-		file.write("{{ {{ 0x{}, 0x{} }}, '{}' }},\n".format(element[0][0], element[0][1], element[1]))
+		file.write("{{ {{ {}, {} }}, '{}' }},\n".format(element[0][0], element[0][1], element[1]))
 
 	file.close()
 else:

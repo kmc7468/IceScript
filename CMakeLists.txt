@@ -15,6 +15,8 @@ set(PYTHON3 CACHE STRING "python3")
 add_custom_command(OUTPUT "./src/Encoding/EastAsianWidthTable.txt"
 				   COMMAND ${PYTHON3} ./EastAsianWidthTableGenerator.py
 				   WORKING_DIRECTORY "./util")
+set_source_files_properties("./src/Encoding/EastAsianWidthTable.txt" PROPERTIES GENERATED TRUE)
+set_source_files_properties("./src/Encoding.CPP" PROPERTIES OBJECT_DEPENDS "./src/Encoding/EastAsianWidthTable.txt")
 
 add_executable(${PROJECT_NAME} ${SOURCE_LIST} "./src/Encoding/EastAsianWidthTable.txt")
 install(TARGETS ${PROJECT_NAME} DESTINATION "bin")
