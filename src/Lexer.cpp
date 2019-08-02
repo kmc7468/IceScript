@@ -183,6 +183,31 @@ namespace ice {
 			}
 			return false;
 		}
+		bool ReadScientificNotation(Messages& messages, const std::string& sourceName, const std::string& lineSource,
+			std::size_t& end, std::size_t line, std::size_t& column) {
+			if (end >= lineSource.size() || (lineSource[end] != 'e' && lineSource[end] != 'E')) {
+				return false;
+			}
+			if (end + 1 < lineSource.size() && (lineSource[end + 1] == '+' || lineSource[end + 1] == '-')) {
+				if (end + 2 >= lineSource.size() || (!IsDigit(lineSource[end + 2]) && lineSource[end + 2] != '\'')) {
+					messages.AddError(Format("expected digit token after '%'", { std::string(1, lineSource[end + 1]) }),
+									  sourceName, line, end + 1,
+									  CreateMessageNoteLocation(lineSource, line, end + 1, 1));
+					column = end - 1;
+					return true;
+				}
+				if (ReadDigitCharacters(messages, sourceName, lineSource, ++++end, line, column)) {
+					return true;
+				}
+			} else {
+				messages.AddError(Format("expected digit token, '+' or '-' after '%'", { std::string(1, lineSource[end]) }),
+								  sourceName, line, end,
+								  CreateMessageNoteLocation(lineSource, line, end, 1));
+				column = end - 1;
+				return true;
+			}
+			return false;
+		}
 	}
 
 	bool Lexer::Lex(const std::string& sourceName, const std::string& source, Messages& messages) {
@@ -221,22 +246,34 @@ namespace ice {
 
 						if (endColumn < lineSource.size() && lineSource[endColumn] == '.') {
 							// Decimal
-							if (ReadDigitCharacters(messages, sourceName, lineSource, ++endColumn, line, column)) {
-								hasError = true;
-								continue;
-							}
-							if (endColumn < lineSource.size() && (lineSource[endColumn] == 'e' || lineSource[endColumn] == 'E') &&
-								ReadDigitCharacters(messages, sourceName, lineSource, ++endColumn, line, column)) {
+							if (ReadDigitCharacters(messages, sourceName, lineSource, ++endColumn, line, column) ||
+								ReadScientificNotation(messages, sourceName, lineSource, ++endColumn, line, column)) {
 								hasError = true;
 								continue;
 							}
 							m_Tokens.push_back(Token(TokenType::Decimal, lineSource.substr(column, endColumn - column), line, column));
 						} else {
-							// DecInteger
-							m_Tokens.push_back(Token(TokenType::DecInteger, lineSource.substr(column, endColumn - column), line, column));
+							if (endColumn < lineSource.size() && (lineSource[endColumn] == 'e' || lineSource[endColumn] == 'E')) {
+								// Decimal
+								if (ReadScientificNotation(messages, sourceName, lineSource, endColumn, line, column)) {
+									hasError = true;
+									continue;
+								}
+								m_Tokens.push_back(Token(TokenType::Decimal, lineSource.substr(column, endColumn - column), line, column));
+							} else {
+								// DecInteger
+								m_Tokens.push_back(Token(TokenType::DecInteger, lineSource.substr(column, endColumn - column), line, column));
+							}
 						}
 
 						column = endColumn - 1;
+					}
+				} else if (IsWhitespace(c)) {
+					// Whitespace
+					if (!m_Tokens.empty() && m_Tokens.back().Type() == TokenType::Whitespace) {
+						m_Tokens.back().Word(m_Tokens.back().Word() + c);
+					} else {
+						m_Tokens.push_back(Token(TokenType::Whitespace, std::string(1, c), line, column));
 					}
 				} else if (c == '\r') {
 					// EOL

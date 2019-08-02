@@ -3,7 +3,7 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-	auto test = u8"10'\n10.5'\n10. 10.5 10.5E12 10";
+	auto test = u8"10e+4 10e-4 10ex4 10e+ 10e+5'";
 	auto lexer = ice::Lexer();
 	auto messages = ice::Messages();
 
