@@ -5,7 +5,7 @@
 
 namespace {
 	const std::map<std::pair<char32_t, char32_t>, char> s_EastAsianWidthTable = {
-#include "Encoding/EastAsianWidthTable.txt"
+#include "detail/EastAsianWidthTable.txt"
 	};
 }
 
