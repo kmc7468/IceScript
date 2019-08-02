@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ice/Message.hpp>
+#include <ice/detail/Config.hpp>
 
 #include <cstddef>
 #include <map>
@@ -69,5 +70,15 @@ namespace ice {
 		std::vector<Token> Tokens() const;
 
 		bool Lex(const std::string& sourceName, const std::string& source, Messages& messages);
+
+	private:
+		ISINLINE void LexInteger(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
+								 bool& hasError, bool& isIncomplete);
+		ISINLINE void LexDecIntegerOrDecimal(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
+											 bool& hasError, bool& isIncomplete);
+		ISINLINE void LexOtherIntegers(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
+									   bool& hasError, bool& isIncomplete);
+		ISINLINE void LexWhitespace(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
+									bool& hasError, bool& isIncomplete);
 	};
 }
