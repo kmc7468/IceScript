@@ -3,9 +3,16 @@
 #include <ice/Encoding.hpp>
 #include <ice/Utility.hpp>
 
+#include <sstream>
 #include <utility>
 
 namespace ice {
+	const std::map<TokenType, std::string> Token::m_TypeNames = {
+#define E(x) { TokenType:: x, #x }
+#include <ice/detail/TokenType.txt>
+#undef E
+	};
+
 	Token::Token(TokenType type, std::string word, std::size_t line, std::size_t column) noexcept
 		: m_Type(type), m_Word(std::move(word)), m_Line(line), m_Column(column) {
 	}
@@ -61,6 +68,12 @@ namespace ice {
 	}
 	void Token::Column(std::size_t newColumn) noexcept {
 		m_Column = newColumn;
+	}
+
+	std::string Token::ToString() const {
+		std::ostringstream oss;
+		oss << m_Line << ':' << m_Column + 1 << ": " << m_TypeNames.at(m_Type) << "(from \"" << m_Word << "\")";
+		return oss.str();
 	}
 }
 

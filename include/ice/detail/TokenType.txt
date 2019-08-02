@@ -1,0 +1,136 @@
+E(None),
+E(Whitespace),
+E(EOL),
+
+E(Identifer),
+E(BinInteger),
+E(OctInteger),
+E(DecInteger),
+E(HexInteger),
+E(Decimal),
+E(Character),
+E(String),
+
+E(Plus), // +
+E(Increment), // ++
+E(PlusAssign), // +=
+E(Minus), // -
+E(Decrement), // --
+E(MinusAssign), // -=
+E(Multiply), // *
+E(MultiplyAssign), // *=
+E(Divide), // /
+E(DivideAssign), // /=
+E(Modulo), // %
+E(ModuloAssign), // %=
+E(Exponent), // **
+E(ExponentAssign), // **=
+
+E(Assign), // =
+E(Equal), // ==
+E(NotEqual), // !=
+E(Greater), // >
+E(GreaterEqaul), // >=
+E(Less), // <
+E(LessEqual), // <=
+E(And), // &&
+E(Or), // ||
+E(Not), // !
+
+E(BitAnd), // &
+E(BitAndAssign), // &=
+E(BitOr), // |
+E(BitOrAssign), // |=
+E(BitXor), // ^
+E(BitXorAssign), // ^=
+E(BitNot), // ~
+E(BitLeftShift), // <<
+E(BitLeftShiftAssign), // <<=
+E(BitRightShift), // >>
+E(BitRightShiftAssign), // >>=
+
+E(RightwardsArrow), // ->
+E(RightwardsDoubleArrow), // =>
+
+E(LeftBrace), // {
+E(RightBrace), // }
+E(LeftParen), // E(
+E(RightParen), // )
+E(LeftBigParen), // [
+E(RightBigParen), // ]
+
+E(Dot), // .
+E(Comma), // ),
+E(Semicolon), // ;
+E(Colon), // :
+E(Question), // ?
+
+E(ModuleKeyword), // module
+E(ImportKeyword), // import
+
+E(Int8Keyword), // int8
+E(Int16Keyword), // int16
+E(Int32Keyword), // int32
+E(Int64Keyword), // int64
+E(Int128Keyword), // int128
+E(IntPtrKeyword), // intptr
+E(UInt8Keyword), // uint8
+E(UInt16Keyword), // uint16
+E(UInt32Keyword), // uint32
+E(UInt64Keyword), // uint64
+E(UInt128Keyword), // uint128
+E(UIntPtrKeyword), // uintptr
+E(Float32Keyword), // float32
+E(Float64Keyword), // float64
+E(NumberKeyword), // number
+E(VoidKeyword), // void
+E(BoolKeyword), // bool
+E(TrueKeyword), // true
+E(FalseKeyword), // false
+E(CharKeyword), // char
+E(Char8Keyword), // char8
+E(StringKeyword), // string
+E(String8Keyword), // string8
+E(NullKeyword), // null
+E(AnyKeyword), // any
+E(ObjectKeyword), // object
+
+E(EnumKeyword), // enum
+E(ClassKeyword), // class
+E(ThisKeyword), // this
+E(SuperKeyword), // super
+E(VirtualKeyword), // virtual
+E(OverrideKeyword), // override
+E(SealedKeyword), // sealed
+E(PubKeyword), // pub
+E(PrivKeyword), // priv
+E(TraitKeyword), // trait
+E(IsKeyword), // is
+E(AsKeyword), // as
+
+E(FunctionKeyword), // function
+E(ReturnKeyword), // return
+
+E(IfKeyword), // if
+E(ElseKeyword), // else
+E(SwitchKeyword), // switch
+E(CaseKeyword), // case
+E(ForKeyword), // for
+E(WhileKeyword), // while
+E(DoKeyword), // do
+E(BreakKeyword), // break
+E(ContinueKeyword), // continue
+
+E(VarKeyword), // var
+E(LetKeyword), // let
+E(MutKeyword), // mut
+E(StaticKeyword), // static
+E(NewKeyword), // new
+
+E(ThrowKeyword), // throw
+E(TryKeyword), // try
+E(CatchKeyword), // catch
+
+E(SizeOfKeyword), // sizeof
+E(TypeOfKeyword), // typeof
+E(NameOfKeyword), // nameof
