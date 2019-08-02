@@ -1,7 +1,11 @@
 #pragma once
 
+#include <ice/Message.hpp>
+
 #include <cstddef>
+#include <map>
 #include <string>
+#include <vector>
 
 namespace ice {
 	enum class TokenType {
@@ -100,6 +104,7 @@ namespace ice {
 		String8Keyword, // string8
 		NullKeyword, // null
 		AnyKeyword, // any
+		ObjectKeyword, // object
 
 		EnumKeyword, // enum
 		ClassKeyword, // class
@@ -131,7 +136,7 @@ namespace ice {
 		LetKeyword, // let
 		MutKeyword, // mut
 		StaticKeyword, // static
-		NewKeyword, // New
+		NewKeyword, // new
 
 		ThrowKeyword, // throw
 		TryKeyword, // try
@@ -168,5 +173,28 @@ namespace ice {
 		void Line(std::size_t newLine) noexcept;
 		std::size_t Column() const noexcept;
 		void Column(std::size_t newColumn) noexcept;
+	};
+
+	class Lexer final {
+	private:
+		static const std::map<std::string, TokenType> m_Keywords;
+
+	private:
+		std::vector<Token> m_Tokens;
+
+	public:
+		Lexer() noexcept = default;
+		Lexer(Lexer&& lexer) noexcept;
+		~Lexer() = default;
+
+	public:
+		Lexer& operator=(Lexer&& lexer) noexcept;
+
+	public:
+		void Clear() noexcept;
+		bool IsEmpty() const noexcept;
+		std::vector<Token> Tokens() const;
+
+		bool Lex(const std::string& sourceName, const std::string& source, Messages& messages);
 	};
 }

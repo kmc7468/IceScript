@@ -199,18 +199,32 @@ namespace ice {
 		AddNote(description, source, line, column, "");
 	}
 	void Messages::AddNote(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note) {
-		Add(Message(MessageType::Note, description, CreateMessageLocation(source, line, column), note));
+		if (source.empty()) {
+			Add(Message(MessageType::Note, description, CreateMessageLocation(line, column), note));
+		} else {
+			Add(Message(MessageType::Note, description, CreateMessageLocation(source, line, column), note));
+		}
 	}
 	void Messages::AddWarning(const std::string& description, const std::string& source, std::size_t line, std::size_t column) {
 		AddWarning(description, source, line, column, "");
 	}
 	void Messages::AddWarning(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note) {
-		Add(Message(MessageType::Warning, description, CreateMessageLocation(source, line, column), note));
+		if (source.empty()) {
+			Add(Message(MessageType::Warning, description, CreateMessageLocation(line, column), note));
+		}
+		else {
+			Add(Message(MessageType::Warning, description, CreateMessageLocation(source, line, column), note));
+		}
 	}
 	void Messages::AddError(const std::string& description, const std::string& source, std::size_t line, std::size_t column) {
 		AddError(description, source, line, column, "");
 	}
 	void Messages::AddError(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note) {
-		Add(Message(MessageType::Error, description, CreateMessageLocation(source, line, column), note));
+		if (source.empty()) {
+			Add(Message(MessageType::Error, description, CreateMessageLocation(line, column), note));
+		}
+		else {
+			Add(Message(MessageType::Error, description, CreateMessageLocation(source, line, column), note));
+		}
 	}
 }
