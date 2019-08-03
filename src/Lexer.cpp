@@ -176,7 +176,6 @@ namespace ice {
 
 	bool Lexer::Lex(const std::string& sourceName, const std::string& source, Messages& messages) {
 		Clear();
-		m_Tokens.reserve(1000);
 
 		bool hasError = false;
 		bool isIncomplete = false;

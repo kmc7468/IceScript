@@ -10,7 +10,7 @@ include_directories("./include")
 file(GLOB_RECURSE SOURCE_LIST "./src/*.cpp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "./bin")
 
-set(PYTHON3 CACHE STRING "python3")
+set(PYTHON3 "python3" CACHE STRING "Python3 interpreter")
 
 add_custom_command(OUTPUT "./src/detail/EastAsianWidthTable.txt"
 				   COMMAND ${PYTHON3} ./EastAsianWidthTableGenerator.py
