@@ -2,7 +2,7 @@ bin/
 test*/
 test*.*
 
-src/Encoding/
+src/detail/*.txt
 
 # CMake
 CMakeFiles/
