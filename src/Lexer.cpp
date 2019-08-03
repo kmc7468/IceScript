@@ -184,8 +184,6 @@ namespace ice {
 		std::size_t lineBegin = 0, nextLineBegin = source.find('\n');
 		std::string lineSource;
 
-		bool isMultiLineComment = false;
-
 		do {
 			lineSource = source.substr(lineBegin, nextLineBegin - lineBegin);
 			if (!lineSource.empty() && lineSource.back() == '\r') {
@@ -203,7 +201,7 @@ namespace ice {
 #define lexingDatas sourceName, messages, lineSource, line, column, hasError, isIncomplete
 				if (IsDigit(c)) {
 					LexInteger(lexingDatas);
-				} else if(c == '"' || c == '\'') {
+				} else if (c == '"' || c == '\'') {
 					LexStringOrCharacter(lexingDatas, c);
 				} else if (IsWhitespace(c)) {
 					LexWhitespace(lexingDatas);
@@ -211,12 +209,14 @@ namespace ice {
 					messages.AddError("unexpected carriage return token", sourceName, line, column);
 					hasError = true;
 				} else {
-					if (LexSpecialCharacters(lineSource, line, column, isComment, isMultiLineComment)) {
+					if (LexSpecialCharacters(lineSource, line, column, isComment)) {
 						LexIdentifier(lexingDatas);
 					}
+					if (isComment) goto exit;
 				}
 			}
 
+		exit:
 			++line;
 		} while ((lineBegin = nextLineBegin + 1, nextLineBegin = source.find('\n', lineBegin), lineBegin) != 0);
 
@@ -482,7 +482,7 @@ namespace ice {
 		// TODO
 	}
 
-	ISINLINE bool Lexer::LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment, bool& isMultiLineComment) {
+	ISINLINE bool Lexer::LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment) {
 		switch (lineSource[column]) {
 #define caseOrg(value, function) case value: function(lineSource, line, column); break
 #define case(value, function) caseOrg(value, function)
@@ -491,7 +491,7 @@ namespace ice {
 		case('*', LexMultiply);
 #undef case
 		case '/':
-			LexDivide(lineSource, line, column, isComment, isMultiLineComment);
+			LexDivide(lineSource, line, column, isComment);
 			break;
 #define case(value, function) caseOrg(value, function)
 		case('%', LexModulo);
@@ -590,16 +590,11 @@ namespace ice {
 			m_Tokens.push_back(Token(TokenType::Multiply, "*", line, column));
 		}
 	}
-	ISINLINE void Lexer::LexDivide(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment, bool& isMultiLineComment) {
+	ISINLINE void Lexer::LexDivide(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment) {
 		if (column + 1 < lineSource.size()) {
 			switch (lineSource[column + 1]) {
 			case '/':
 				isComment = true;
-				break;
-
-			case '*':
-				isComment = true;
-				isMultiLineComment = true;
 				break;
 
 			case '=':
