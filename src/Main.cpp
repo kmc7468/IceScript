@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[]) {
 	// Test and Benchmark Codes
-	auto test = u8"0b0";
+	auto test = u8"\"asdf\"\n\"asdf\n'a'\n'a";
 	auto lexer = ice::Lexer();
 	auto messages = ice::Messages();
 

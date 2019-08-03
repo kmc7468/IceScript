@@ -199,6 +199,8 @@ namespace ice {
 #define lexingDatas sourceName, messages, lineSource, line, column, hasError, isIncomplete
 				if (IsDigit(c)) {
 					LexInteger(lexingDatas);
+				} else if(c == '"' || c == '\'') {
+					LexStringOrCharacter(lexingDatas, c);
 				} else if (IsWhitespace(c)) {
 					LexWhitespace(lexingDatas);
 				} else if (c == '\r') {
@@ -440,6 +442,24 @@ namespace ice {
 			m_Tokens.push_back(Token(base, lineSource.substr(column, endColumn - column), line, column));
 			column = endColumn - 1;
 		}
+	}
+	ISINLINE void Lexer::LexStringOrCharacter(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
+											  bool& hasError, bool& isIncomplete, char quotation) {
+		std::size_t endColumn = column + 1;
+		do {
+			while (endColumn < lineSource.size() && lineSource[endColumn] != quotation) ++endColumn;
+			if (endColumn == lineSource.size()) {
+				messages.AddError("unexcpeted EOL token", sourceName, line, endColumn - 1,
+								  CreateMessageNoteLocation(lineSource, line, endColumn - 1, 1));
+				hasError = true;
+				column = endColumn;
+				return;
+			}
+			++endColumn;
+		} while (lineSource[endColumn - 2] == '\\');
+
+		m_Tokens.push_back(Token(quotation == '"' ? TokenType::String : TokenType::Character, lineSource.substr(column, endColumn - column), line, column));
+		column = endColumn - 1;
 	}
 	ISINLINE void Lexer::LexWhitespace(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
 									   bool& hasError, bool& isIncomplete) {
