@@ -82,5 +82,21 @@ namespace ice {
 										   bool& hasError, bool& isIncomplete, char quotation);
 		ISINLINE void LexWhitespace(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
 									bool& hasError, bool& isIncomplete);
+		ISINLINE void LexIdentifier(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
+									bool& hasError, bool& isIncomplete);
+
+		ISINLINE bool LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment, bool& isMultiLineComment);
+		ISINLINE void LexPlus(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexMinus(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexMultiply(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexDivide(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment, bool& isMultiLineComment);
+		ISINLINE void LexModulo(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexAssign(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexNot(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexGreater(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexLess(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexBitAnd(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexBitOr(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexBitXor(const std::string& lineSource, std::size_t line, std::size_t& column);
 	};
 }

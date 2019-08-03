@@ -173,9 +173,10 @@ namespace ice {
 	std::vector<Token> Lexer::Tokens() const {
 		return std::move(m_Tokens);
 	}
-	
+
 	bool Lexer::Lex(const std::string& sourceName, const std::string& source, Messages& messages) {
 		Clear();
+		m_Tokens.reserve(1000);
 
 		bool hasError = false;
 		bool isIncomplete = false;
@@ -184,11 +185,15 @@ namespace ice {
 		std::size_t lineBegin = 0, nextLineBegin = source.find('\n');
 		std::string lineSource;
 
+		bool isMultiLineComment = false;
+
 		do {
 			lineSource = source.substr(lineBegin, nextLineBegin - lineBegin);
 			if (!lineSource.empty() && lineSource.back() == '\r') {
 				lineSource.erase(lineSource.end() - 1);
 			}
+
+			bool isComment = false;
 
 			char c;
 			int cLength;
@@ -206,6 +211,10 @@ namespace ice {
 				} else if (c == '\r') {
 					messages.AddError("unexpected carriage return token", sourceName, line, column);
 					hasError = true;
+				} else {
+					if (LexSpecialCharacters(lineSource, line, column, isComment, isMultiLineComment)) {
+						LexIdentifier(lexingDatas);
+					}
 				}
 			}
 
@@ -467,6 +476,293 @@ namespace ice {
 			m_Tokens.back().Word(m_Tokens.back().Word() + lineSource[column]);
 		} else {
 			m_Tokens.push_back(Token(TokenType::Whitespace, std::string(1, lineSource[column]), line, column));
+		}
+	}
+	ISINLINE void Lexer::LexIdentifier(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
+									   bool& hasError, bool& isIncomplete) {
+		// TODO
+	}
+
+	ISINLINE bool Lexer::LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment, bool& isMultiLineComment) {
+		switch (lineSource[column]) {
+#define caseOrg(value, function) case value: function(lineSource, line, column); break
+#define case(value, function) caseOrg(value, function)
+		case('+', LexPlus);
+		case('-', LexMinus);
+		case('*', LexMultiply);
+#undef case
+		case '/':
+			LexDivide(lineSource, line, column, isComment, isMultiLineComment);
+			break;
+#define case(value, function) caseOrg(value, function)
+		case('%', LexModulo);
+		case('=', LexAssign);
+		case('!', LexNot);
+		case('>', LexGreater);
+		case('<', LexLess);
+		case('&', LexBitAnd);
+		case('|', LexBitOr);
+		case('^', LexBitXor);
+#undef caseOrg
+#undef case
+#define caseOrg(value, tokenType) case value: m_Tokens.push_back(Token(TokenType::tokenType, std::string(1, value), line, column)); break
+#define case(value, tokenType) caseOrg(value, tokenType)
+		case('~', BitNot);
+		case('{', LeftBrace);
+		case('}', RightBrace);
+		case('(', LeftParen);
+		case(')', RightParen);
+		case('[', LeftBigParen);
+		case(']', RightBigParen);
+		case('.', Dot);
+		case(',', Comma);
+		case(';', Semicolon);
+		case(':', Colon);
+		case('?', Question);
+#undef case
+		default:
+			return true;
+		}
+		return false;
+	}
+	ISINLINE void Lexer::LexPlus(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '+':
+				m_Tokens.push_back(Token(TokenType::Increment, "++", line, column));
+				break;
+
+			case '=':
+				m_Tokens.push_back(Token(TokenType::PlusAssign, "+=", line, column));
+				break;
+
+			default: goto plus;
+			}
+			++column;
+		} else {
+		plus:
+			m_Tokens.push_back(Token(TokenType::Plus, "+", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexMinus(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '-':
+				m_Tokens.push_back(Token(TokenType::Decrement, "--", line, column));
+				break;
+
+			case '=':
+				m_Tokens.push_back(Token(TokenType::MinusAssign, "-=", line, column));
+				break;
+
+			case '>':
+				m_Tokens.push_back(Token(TokenType::RightwardsArrow, "->", line, column));
+				break;
+
+			default: goto minus;
+			}
+			++column;
+		} else {
+		minus:
+			m_Tokens.push_back(Token(TokenType::Minus, "-", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexMultiply(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '*':
+				if (column + 2 < lineSource.size() && lineSource[column + 2] == '=') {
+					m_Tokens.push_back(Token(TokenType::ExponentAssign, "**=", line, column));
+					++column;
+				} else {
+					m_Tokens.push_back(Token(TokenType::Exponent, "**", line, column));
+				}
+				break;
+
+			case '=':
+				m_Tokens.push_back(Token(TokenType::MultiplyAssign, "*=", line, column));
+				break;
+
+			default: goto multiply;
+			}
+			++column;
+		} else {
+		multiply:
+			m_Tokens.push_back(Token(TokenType::Multiply, "*", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexDivide(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment, bool& isMultiLineComment) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '/':
+				isComment = true;
+				break;
+
+			case '*':
+				isComment = true;
+				isMultiLineComment = true;
+				break;
+
+			case '=':
+				m_Tokens.push_back(Token(TokenType::DivideAssign, "/=", line, column));
+				break;
+
+			default: goto divide;
+			}
+			++column;
+		} else {
+		divide:
+			m_Tokens.push_back(Token(TokenType::Divide, "/", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexModulo(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '=':
+				m_Tokens.push_back(Token(TokenType::ModuloAssign, "%=", line, column));
+				break;
+
+			default: goto modulo;
+			}
+			++column;
+		} else {
+		modulo:
+			m_Tokens.push_back(Token(TokenType::Modulo, "%", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexAssign(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '=':
+				m_Tokens.push_back(Token(TokenType::Equal, "==", line, column));
+				break;
+
+			case '>':
+				m_Tokens.push_back(Token(TokenType::RightwardsDoubleArrow, "=>", line, column));
+				break;
+
+			default: goto assign;
+			}
+			++column;
+		} else {
+		assign:
+			m_Tokens.push_back(Token(TokenType::Assign, "=", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexNot(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '=':
+				m_Tokens.push_back(Token(TokenType::NotEqual, "!=", line, column));
+				break;
+
+			default: goto not2;
+			}
+			++column;
+		} else {
+		not2:
+			m_Tokens.push_back(Token(TokenType::Not, "!", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexGreater(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '=':
+				m_Tokens.push_back(Token(TokenType::GreaterEqaul, ">=", line, column));
+				break;
+
+			case '>':
+				if (column + 2 < lineSource.size() && lineSource[column + 2] == '=') {
+					m_Tokens.push_back(Token(TokenType::BitRightShiftAssign, ">>=", line, column));
+					++column;
+				} else {
+					m_Tokens.push_back(Token(TokenType::BitRightShift, ">>", line, column));
+				}
+				break;
+
+			default: goto greater;
+			}
+			++column;
+		} else {
+		greater:
+			m_Tokens.push_back(Token(TokenType::Greater, ">", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexLess(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '=':
+				m_Tokens.push_back(Token(TokenType::LessEqual, "<=", line, column));
+				break;
+
+			case '<':
+				if (column + 2 < lineSource.size() && lineSource[column + 2] == '=') {
+					m_Tokens.push_back(Token(TokenType::BitLeftShiftAssign, "<<=", line, column));
+					++column;
+				} else {
+					m_Tokens.push_back(Token(TokenType::BitLeftShift, "<<", line, column));
+				}
+				break;
+
+			default: goto less;
+			}
+			++column;
+		} else {
+		less:
+			m_Tokens.push_back(Token(TokenType::Less, "<", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexBitAnd(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '=':
+				m_Tokens.push_back(Token(TokenType::BitAndAssign, "&=", line, column));
+				break;
+
+			case '&':
+				m_Tokens.push_back(Token(TokenType::And, "&&", line, column));
+				break;
+
+			default: goto bitand2;
+			}
+			++column;
+		} else {
+		bitand2:
+			m_Tokens.push_back(Token(TokenType::BitAnd, "&", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexBitOr(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '=':
+				m_Tokens.push_back(Token(TokenType::BitOrAssign, "|=", line, column));
+				break;
+
+			case '|':
+				m_Tokens.push_back(Token(TokenType::Or, "||", line, column));
+				break;
+
+			default: goto bitor2;
+			}
+			++column;
+		} else {
+		bitor2:
+			m_Tokens.push_back(Token(TokenType::BitOr, "|", line, column));
+		}
+	}
+	ISINLINE void Lexer::LexBitXor(const std::string& lineSource, std::size_t line, std::size_t& column) {
+		if (column + 1 < lineSource.size()) {
+			switch (lineSource[column + 1]) {
+			case '=':
+				m_Tokens.push_back(Token(TokenType::BitXorAssign, "^=", line, column));
+				break;
+
+			default: goto bitxor2;
+			}
+			++column;
+		} else {
+		bitxor2:
+			m_Tokens.push_back(Token(TokenType::BitXor, "^", line, column));
 		}
 	}
 }

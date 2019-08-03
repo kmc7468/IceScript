@@ -54,13 +54,13 @@ E(RightwardsDoubleArrow), // =>
 
 E(LeftBrace), // {
 E(RightBrace), // }
-E(LeftParen), // E(
+E(LeftParen), // (
 E(RightParen), // )
 E(LeftBigParen), // [
 E(RightBigParen), // ]
 
 E(Dot), // .
-E(Comma), // ),
+E(Comma), // ,
 E(Semicolon), // ;
 E(Colon), // :
 E(Question), // ?

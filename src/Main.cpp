@@ -1,11 +1,15 @@
 #include <ice/Lexer.hpp>
 
+#include <Windows.h>
+
 #include <chrono>
 #include <iostream>
 
 int main(int argc, char* argv[]) {
+	SetConsoleOutputCP(CP_UTF8);
+
 	// Test and Benchmark Codes
-	auto test = u8"\"asdf\"\n\"asdf\n'a'\n'a";
+	auto test = u8"+ ++ += - -- -= * *= / /= % %= ** **=\n= == != > >= < <= && || !\n& &= | |= ^ ^= ~ << <<= >> >>=\n-> =>\n{}()[].,;:?";
 	auto lexer = ice::Lexer();
 	auto messages = ice::Messages();
 
