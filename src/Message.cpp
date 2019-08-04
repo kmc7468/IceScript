@@ -129,8 +129,7 @@ namespace ice {
 				if (IsFullWidth(GetCodepoint(source.c_str() + i, cLength))) {
 					if (i < column) {
 						realColumn += 1;
-					}
-					else {
+					} else {
 						realLength += 1;
 					}
 				}

@@ -27,8 +27,7 @@ namespace ice {
 		return '0' <= firstByte && firstByte <= '9';
 	}
 	bool IsWhitespace(char firstByte) noexcept {
-		switch (firstByte)
-		{
+		switch (firstByte) {
 		case ' ':
 		case '\t':
 			return true;
@@ -79,9 +78,9 @@ namespace ice {
 
 		case 4:
 			return ((static_cast<unsigned char>(*begin) & 0x07) << 18) +
-				((static_cast<unsigned char>(*(begin + 1)) & 0x3F) << 12) +
-				((static_cast<unsigned char>(*(begin + 2)) & 0x3F) << 6) +
-				(static_cast<unsigned char>(*(begin + 3)) & 0x3F);
+				   ((static_cast<unsigned char>(*(begin + 1)) & 0x3F) << 12) +
+				   ((static_cast<unsigned char>(*(begin + 2)) & 0x3F) << 6) +
+				   (static_cast<unsigned char>(*(begin + 3)) & 0x3F);
 
 		default:
 			return 0;
