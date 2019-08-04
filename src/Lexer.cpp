@@ -212,15 +212,15 @@ namespace ice {
 				if (!isIdentifier && IsDigit(c)) {
 					LexInteger(lexingDatas);
 				} else if (c == '"' || c == '\'') {
+					AddIdentifier();
 					LexStringOrCharacter(lexingDatas, c);
-					AddIdentifier();
 				} else if (IsWhitespace(c)) {
-					LexWhitespace(lexingDatas);
 					AddIdentifier();
+					LexWhitespace(lexingDatas);
 				} else if (c == '\r') {
+					AddIdentifier();
 					messages.AddError("unexpected carriage return token", sourceName, line, column);
 					hasError = true;
-					AddIdentifier();
 				} else {
 					if (LexSpecialCharacters(lineSource, line, column, isComment)) {
 						switch (c) {
@@ -250,6 +250,7 @@ namespace ice {
 			}
 
 		exit:
+			AddIdentifier();
 			++line;
 		} while ((lineBegin = nextLineBegin + 1, nextLineBegin = source.find('\n', lineBegin), lineBegin) != 0);
 
