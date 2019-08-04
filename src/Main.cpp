@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 	SetConsoleOutputCP(CP_UTF8);
 
 	// Test and Benchmark Codes
-	auto test = u8"+ //++ += - -- -= * *= / /= % %= ** **=\n= == != > >= < <= && || !\n& &= | |= ^ ^= ~ << <<= >> >>=\n-> =>\n{}()[].,;:?";
+	auto test = u8"+ //++ += - -- -= * *= / /= % %= ** **=\n= == != > >= < <= && || !\n& &= | |= ^ ^= ~ << <<= >> >>=\n-> =>\n{}()[].,;:?\nasdf qwer _asdf _qwer int8 int64 void null ` @ # $\n\"asdf";
 	auto lexer = ice::Lexer();
 	auto messages = ice::Messages();
 

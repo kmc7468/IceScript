@@ -191,6 +191,8 @@ namespace ice {
 			}
 
 			bool isComment = false;
+			bool isIdentifier = false;
+			std::size_t identiferBeginColumn = 0, identiferEndColumn = 0;
 
 			char c;
 			int cLength;
@@ -199,20 +201,51 @@ namespace ice {
 				cLength = GetCodepointLength(c);
 
 #define lexingDatas sourceName, messages, lineSource, line, column, hasError, isIncomplete
-				if (IsDigit(c)) {
+#define AddIdentifier() if (isIdentifier) {																														\
+							isIdentifier = false;																												\
+							m_Tokens.push_back(Token(TokenType::Identifer, lineSource.substr(identiferBeginColumn, identiferEndColumn - identiferBeginColumn),	\
+													 line, identiferBeginColumn));																				\
+							if (auto iter = m_Keywords.find(m_Tokens.back().Word()); iter != m_Keywords.end()) {												\
+								m_Tokens.back().Type(iter->second);																								\
+							}																																	\
+						}
+				if (!isIdentifier && IsDigit(c)) {
 					LexInteger(lexingDatas);
 				} else if (c == '"' || c == '\'') {
 					LexStringOrCharacter(lexingDatas, c);
+					AddIdentifier();
 				} else if (IsWhitespace(c)) {
 					LexWhitespace(lexingDatas);
+					AddIdentifier();
 				} else if (c == '\r') {
 					messages.AddError("unexpected carriage return token", sourceName, line, column);
 					hasError = true;
+					AddIdentifier();
 				} else {
 					if (LexSpecialCharacters(lineSource, line, column, isComment)) {
-						LexIdentifier(lexingDatas);
+						switch (c) {
+						case '`':
+						case '@':
+						case '#':
+						case '$':
+							messages.AddError("unexpected invalid token", sourceName, line, column,
+								CreateMessageNoteLocation(lineSource, line, column, 1));
+							hasError = true;
+							AddIdentifier();
+							continue;
+						}
+
+						if (isIdentifier) {
+							identiferEndColumn += cLength;
+						} else {
+							isIdentifier = true;
+							identiferBeginColumn = column;
+							identiferEndColumn = column + cLength;
+						}
+					} else {
+						AddIdentifier();
+						if (isComment) goto exit;
 					}
-					if (isComment) goto exit;
 				}
 			}
 
@@ -457,7 +490,7 @@ namespace ice {
 		do {
 			while (endColumn < lineSource.size() && lineSource[endColumn] != quotation) ++endColumn;
 			if (endColumn == lineSource.size()) {
-				messages.AddError("unexcpeted EOL token", sourceName, line, endColumn - 1,
+				messages.AddError("unexcpeted EOL", sourceName, line, endColumn - 1,
 								  CreateMessageNoteLocation(lineSource, line, endColumn - 1, 1));
 				hasError = true;
 				column = endColumn;
@@ -479,7 +512,7 @@ namespace ice {
 	}
 	ISINLINE void Lexer::LexIdentifier(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
 									   bool& hasError, bool& isIncomplete) {
-		// TODO
+		
 	}
 
 	ISINLINE bool Lexer::LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment) {
