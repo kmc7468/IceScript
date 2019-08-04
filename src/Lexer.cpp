@@ -179,6 +179,7 @@ namespace ice {
 
 		bool hasError = false;
 		bool isIncomplete = false;
+		bool noEOLToken = false;
 
 		std::size_t line = 1;
 		std::size_t lineBegin = 0, nextLineBegin = source.find('\n');
@@ -221,6 +222,15 @@ namespace ice {
 					AddIdentifier();
 					messages.AddError("unexpected carriage return token", sourceName, line, column);
 					hasError = true;
+				} else if (c == '\\') {
+					if (column + 1 != lineSource.size()) {
+						AddIdentifier();
+						messages.AddError("expected EOL", sourceName, line, column,
+										  CreateMessageNoteLocation(lineSource, line, column, 1));
+						hasError = true;
+						continue;
+					}
+					noEOLToken = true;
 				} else {
 					if (LexSpecialCharacters(lineSource, line, column, isComment)) {
 						switch (c) {
@@ -251,6 +261,10 @@ namespace ice {
 
 		exit:
 			AddIdentifier();
+			if (!noEOLToken) {
+				m_Tokens.push_back(Token(TokenType::EOL, "", line, lineSource.size()));
+				noEOLToken = false;
+			}
 			++line;
 		} while ((lineBegin = nextLineBegin + 1, nextLineBegin = source.find('\n', lineBegin), lineBegin) != 0);
 
