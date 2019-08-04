@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <map>
+#include <utility>
 
 namespace {
 	const std::map<std::pair<char32_t, char32_t>, char> s_EastAsianWidthTable = {
@@ -55,11 +56,7 @@ namespace ice {
 		return false;
 	}
 	bool IsHalfWidth(char32_t character) noexcept {
-		if (character < 0x80) return true;
-		for (auto iter = s_EastAsianWidthTable.begin(); iter != s_EastAsianWidthTable.end(); ++iter) {
-			if (iter->first.first <= character && character <= iter->first.second) return iter->second == 'H';
-		}
-		return true;
+		return !IsFullWidth(character);
 	}
 
 	char32_t GetCodepoint(const char* begin, int length) noexcept {

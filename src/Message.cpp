@@ -105,12 +105,7 @@ namespace ice {
 		const std::string emptyLineBar = std::string(lineString.size() + 1, ' ') + '|';
 		const std::string lineBar = lineString + " | ";
 		
-		std::string result;
-		result.reserve(source.size() + lineBar.size() + emptyLineBar.size() * 2 + length + 128);
-		result += emptyLineBar;
-		result += '\n';
-		result += lineBar;
-
+		std::string result = emptyLineBar + '\n' + lineBar;
 		std::size_t realColumn = column, realLength = length;
 		
 		for (std::size_t i = 0; i < source.size();) {
@@ -128,9 +123,9 @@ namespace ice {
 				result.insert(result.end(), source.begin() + i, source.begin() + i + cLength);
 				if (IsFullWidth(GetCodepoint(source.c_str() + i, cLength))) {
 					if (i < column) {
-						realColumn += 1;
+						++realColumn;
 					} else {
-						realLength += 1;
+						++realLength;
 					}
 				}
 			}
@@ -138,11 +133,7 @@ namespace ice {
 			i += cLength;
 		}
 
-		result += '\n';
-		result += emptyLineBar;
-		result += std::string(realColumn + 1, ' ');
-		result += std::string(realLength, '^');
-
+		result += '\n' + emptyLineBar + std::string(realColumn + 1, ' ') + std::string(realLength, '^');
 		return result;
 	}
 }
@@ -186,7 +177,6 @@ namespace ice {
 			} else {
 				std::cout << '\n';
 			}
-
 			std::cout << message.ToString() << "\n";
 		}
 	}

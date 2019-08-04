@@ -3,7 +3,6 @@
 namespace ice {
 	std::string Format(const std::string& format, const std::vector<std::string>& arguments) {
 		std::string result;
-		result.reserve(format.size() + 64);
 
 		std::size_t begin = 0;
 		std::size_t percent;

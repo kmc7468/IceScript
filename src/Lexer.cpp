@@ -369,15 +369,13 @@ namespace ice {
 		bool ReadHexDigits(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
 						   bool& hasError, bool& isIncomplete, std::size_t& end) {
 			while (end < lineSource.size() &&
-				(IsDigit(lineSource[end]) ||
-				('A' <= lineSource[end] && lineSource[end] <= 'F') ||
-				('a' <= lineSource[end] && lineSource[end] <= 'f') ||
-				lineSource[end] == '\'')) {
-				++end;
-			}
+				  (IsDigit(lineSource[end]) ||
+				  ('A' <= lineSource[end] && lineSource[end] <= 'F') ||
+				  ('a' <= lineSource[end] && lineSource[end] <= 'f') ||
+				  lineSource[end] == '\'')) ++end;
 			if (lineSource[end - 1] == '\'') {
 				messages.AddError("expected digit token after '\''", sourceName, line, end - 1,
-					CreateMessageNoteLocation(lineSource, line, end - 1, 1));
+								  CreateMessageNoteLocation(lineSource, line, end - 1, 1));
 				column = end - 1;
 				hasError = true;
 				return true;
@@ -524,10 +522,6 @@ namespace ice {
 		} else {
 			m_Tokens.push_back(Token(TokenType::Whitespace, std::string(1, lineSource[column]), line, column));
 		}
-	}
-	ISINLINE void Lexer::LexIdentifier(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
-									   bool& hasError, bool& isIncomplete) {
-		
 	}
 
 	ISINLINE bool Lexer::LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment) {
