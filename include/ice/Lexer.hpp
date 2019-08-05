@@ -4,8 +4,8 @@
 #include <ice/detail/Config.hpp>
 
 #include <cstddef>
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace ice {
@@ -17,7 +17,7 @@ namespace ice {
 
 	class Token final {
 	private:
-		static const std::map<TokenType, std::string> m_TypeNames;
+		static const std::unordered_map<TokenType, std::string> m_TypeNames;
 
 	private:
 		TokenType m_Type = TokenType::None;
@@ -51,7 +51,7 @@ namespace ice {
 
 	class Lexer final {
 	private:
-		static const std::map<std::string, TokenType> m_Keywords;
+		static const std::unordered_map<std::string, TokenType> m_Keywords;
 
 	private:
 		std::vector<Token> m_Tokens;

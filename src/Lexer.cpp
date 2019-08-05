@@ -11,7 +11,7 @@
 #endif
 
 namespace ice {
-	const std::map<TokenType, std::string> Token::m_TypeNames = {
+	const std::unordered_map<TokenType, std::string> Token::m_TypeNames = {
 #define E(x) { TokenType:: x, #x }
 #include <ice/detail/TokenType.txt>
 #undef E
@@ -82,7 +82,7 @@ namespace ice {
 }
 
 namespace ice {
-	const std::map<std::string, TokenType> Lexer::m_Keywords = {
+	const std::unordered_map<std::string, TokenType> Lexer::m_Keywords = {
 		{ "module", TokenType::ModuleKeyword },
 		{ "import", TokenType::ImportKeyword },
 

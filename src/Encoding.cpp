@@ -1,11 +1,20 @@
 #include <ice/Encoding.hpp>
 
 #include <algorithm>
-#include <map>
+#include <cstddef>
+#include <unordered_map>
 #include <utility>
 
+template<>
+struct std::hash<std::pair<char32_t, char32_t>> {
+	std::size_t operator()(const std::pair<char32_t, char32_t>& pair) const noexcept {
+		const std::hash<char32_t> orgHash;
+		return orgHash(pair.first) + orgHash(pair.second);
+	}
+};
+
 namespace {
-	const std::map<std::pair<char32_t, char32_t>, char> s_EastAsianWidthTable = {
+	const std::unordered_map<std::pair<char32_t, char32_t>, char> s_EastAsianWidthTable = {
 #include "detail/EastAsianWidthTable.txt"
 	};
 }

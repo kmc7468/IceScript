@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 	SetConsoleOutputCP(CP_UTF8);
 
 	// Test and Benchmark Codes
-	auto test = u8"x = 5 +\\\n5";
+	auto test = u8"+ ++ += - -- -= * *= / /= % %= ** **=\n= == != > >= < <= && || !\n& &= | |= ^ ^= ~ << <<= >> >>=\n-> =>\n{}()[].,;:?";
 	auto lexer = ice::Lexer();
 	auto messages = ice::Messages();
 
