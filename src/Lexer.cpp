@@ -179,7 +179,7 @@ namespace ice {
 
 		bool hasError = false;
 		bool isIncomplete = false;
-		bool noEOLToken = false;
+		bool isNoEOLToken = false;
 
 		std::size_t line = 1;
 		std::size_t lineBegin = 0, nextLineBegin = source.find('\n');
@@ -201,7 +201,7 @@ namespace ice {
 				c = lineSource[column];
 				cLength = GetCodepointLength(c);
 
-#define lexingDatas sourceName, messages, lineSource, line, column, hasError, isIncomplete
+#define lexingData sourceName, messages, lineSource, line, column, hasError, isIncomplete
 #define AddIdentifier() if (isIdentifier) {																														\
 							isIdentifier = false;																												\
 							m_Tokens.push_back(Token(TokenType::Identifer, lineSource.substr(identiferBeginColumn, identiferEndColumn - identiferBeginColumn),	\
@@ -211,13 +211,13 @@ namespace ice {
 							}																																	\
 						}
 				if (!isIdentifier && IsDigit(c)) {
-					LexInteger(lexingDatas);
+					LexInteger(lexingData);
 				} else if (c == '"' || c == '\'') {
 					AddIdentifier();
-					LexStringOrCharacter(lexingDatas, c);
+					LexStringOrCharacter(lexingData, c);
 				} else if (IsWhitespace(c)) {
 					AddIdentifier();
-					LexWhitespace(lexingDatas);
+					LexWhitespace(lexingData);
 				} else if (c == '\r') {
 					AddIdentifier();
 					messages.AddError("unexpected carriage return token", sourceName, line, column);
@@ -230,7 +230,7 @@ namespace ice {
 						hasError = true;
 						continue;
 					}
-					noEOLToken = true;
+					isNoEOLToken = true;
 				} else {
 					if (LexSpecialCharacters(lineSource, line, column, isComment)) {
 						switch (c) {
@@ -261,9 +261,9 @@ namespace ice {
 
 		exit:
 			AddIdentifier();
-			if (!noEOLToken) {
+			if (!isNoEOLToken) {
 				m_Tokens.push_back(Token(TokenType::EOL, "", line, lineSource.size()));
-				noEOLToken = false;
+				isNoEOLToken = false;
 			}
 			++line;
 		} while ((lineBegin = nextLineBegin + 1, nextLineBegin = source.find('\n', lineBegin), lineBegin) != 0);
@@ -299,7 +299,7 @@ namespace ice {
 					hasError = true;
 					return true;
 				}
-				if (ReadDigits(lexingDatas, ++end)) {
+				if (ReadDigits(lexingData, ++end)) {
 					return true;
 				}
 				return false;
@@ -387,38 +387,38 @@ namespace ice {
 	ISINLINE void Lexer::LexInteger(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
 									bool& hasError, bool& isIncomplete) {
 		if (lineSource[column] != '0') {
-			LexDecIntegerOrDecimal(lexingDatas);
+			LexDecIntegerOrDecimal(lexingData);
 		} else {
-			LexOtherIntegers(lexingDatas);
+			LexOtherIntegers(lexingData);
 		}
 	}
 	ISINLINE void Lexer::LexDecIntegerOrDecimal(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
 												bool& hasError, bool& isIncomplete) {
 		std::size_t endColumn = column + 1;
-		if (ReadDigits(lexingDatas, endColumn)) {
+		if (ReadDigits(lexingData, endColumn)) {
 			hasError = true;
 			return;
 		}
 		
 		if (endColumn < lineSource.size() && lineSource[endColumn] == '.') {
 			const std::size_t oldEndColumn = ++endColumn;
-			if (ReadDigits(lexingDatas, endColumn)) {
+			if (ReadDigits(lexingData, endColumn)) {
 				return;
 			} else if (oldEndColumn == endColumn) {
 				messages.AddError("expected digit token after '.'", sourceName, line, endColumn - 1,
 								  CreateMessageNoteLocation(lineSource, line, endColumn - 1, 1));
 				hasError = true;
 				if (lineSource[endColumn] == 'e' || lineSource[endColumn] == 'E') ++endColumn;
-				ReadDigits(lexingDatas, endColumn);
+				ReadDigits(lexingData, endColumn);
 				column = endColumn - 1;
 				return;
-			} else if (ReadScientificNotation(lexingDatas, endColumn)) {
+			} else if (ReadScientificNotation(lexingData, endColumn)) {
 				return;
 			}
 			m_Tokens.push_back(Token(TokenType::Decimal, lineSource.substr(column, endColumn - column), line, column));
 		} else {
 			const std::size_t oldEndColumn = endColumn;
-			if (ReadScientificNotation(lexingDatas, endColumn)) {
+			if (ReadScientificNotation(lexingData, endColumn)) {
 				hasError = true;
 				return;
 			}
@@ -465,7 +465,7 @@ namespace ice {
 			}
 		}
 
-		if (digitReader(lexingDatas, ++endColumn)) {
+		if (digitReader(lexingData, ++endColumn)) {
 			return;
 		}
 		if (endColumn - 1 == column) {
@@ -480,10 +480,10 @@ namespace ice {
 		if (endColumn < lineSource.size()) {
 			const std::size_t oldEndColumn = endColumn;
 			if (lineSource[endColumn] == '.') {
-				ReadDigits(lexingDatas, ++endColumn);
+				ReadDigits(lexingData, ++endColumn);
 			} else goto done;
 			if (lineSource[endColumn] == 'e' || lineSource[endColumn] == 'E') {
-				ReadScientificNotation(lexingDatas, endColumn);
+				ReadScientificNotation(lexingData, endColumn);
 			} else if (oldEndColumn == endColumn) goto done;
 
 			messages.AddError(Format("invalid suffix '%' in integer constant", { lineSource.substr(oldEndColumn, endColumn - oldEndColumn) }),
