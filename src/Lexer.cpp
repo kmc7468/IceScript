@@ -76,7 +76,7 @@ namespace ice {
 
 	std::string Token::ToString() const {
 		std::ostringstream oss;
-		oss << m_Line << ':' << m_Column + 1 << ": " << m_TypeNames.at(m_Type) << "(from \"" << m_Word << "\")";
+		oss << m_Line << ':' << m_Column + 1 << ": " << m_TypeNames.at(m_Type) << "(\"" << m_Word << "\")";
 		return oss.str();
 	}
 }
@@ -168,7 +168,7 @@ namespace ice {
 	bool Lexer::IsEmpty() const noexcept {
 		return m_Tokens.empty();
 	}
-	std::vector<Token> Lexer::Tokens() const {
+	std::vector<Token> Lexer::Tokens() noexcept {
 		return std::move(m_Tokens);
 	}
 
@@ -215,7 +215,6 @@ namespace ice {
 					LexStringOrCharacter(lexingData, c);
 				} else if (IsWhitespace(c)) {
 					AddIdentifier();
-					LexWhitespace(lexingData);
 				} else if (c == '\r') {
 					AddIdentifier();
 					messages.AddError("unexpected carriage return token", sourceName, line, column);
@@ -512,14 +511,6 @@ namespace ice {
 
 		m_Tokens.push_back(Token(quotation == '"' ? TokenType::String : TokenType::Character, lineSource.substr(column, endColumn - column), line, column));
 		column = endColumn - 1;
-	}
-	ISINLINE void Lexer::LexWhitespace(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
-									   bool& hasError, bool& isIncomplete) {
-		if (!m_Tokens.empty() && m_Tokens.back().Type() == TokenType::Whitespace) {
-			m_Tokens.back().Word(m_Tokens.back().Word() + lineSource[column]);
-		} else {
-			m_Tokens.push_back(Token(TokenType::Whitespace, std::string(1, lineSource[column]), line, column));
-		}
 	}
 
 	ISINLINE bool Lexer::LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment) {

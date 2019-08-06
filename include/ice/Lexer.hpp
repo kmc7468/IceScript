@@ -67,7 +67,7 @@ namespace ice {
 	public:
 		void Clear() noexcept;
 		bool IsEmpty() const noexcept;
-		std::vector<Token> Tokens() const;
+		std::vector<Token> Tokens() noexcept;
 
 		bool Lex(const std::string& sourceName, const std::string& source, Messages& messages);
 
@@ -80,8 +80,6 @@ namespace ice {
 									   bool& hasError, bool& isIncomplete);
 		ISINLINE void LexStringOrCharacter(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
 										   bool& hasError, bool& isIncomplete, char quotation);
-		ISINLINE void LexWhitespace(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
-									bool& hasError, bool& isIncomplete);
 
 		ISINLINE bool LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment);
 		ISINLINE void LexPlus(const std::string& lineSource, std::size_t line, std::size_t& column);

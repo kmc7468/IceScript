@@ -1,5 +1,4 @@
 E(None),
-E(Whitespace),
 E(EOL),
 
 E(Identifer),
