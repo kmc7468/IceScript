@@ -96,20 +96,19 @@ E(AnyKeyword), // any
 E(ObjectKeyword), // object
 
 E(EnumKeyword), // enum
-E(ClassKeyword), // class
-E(ThisKeyword), // this
-E(SuperKeyword), // super
-E(VirtualKeyword), // virtual
-E(OverrideKeyword), // override
-E(SealedKeyword), // sealed
+E(StructKeyword), // struct
+E(LowerSelfKeyword), // self
+E(UpperSelfKeyword), // Self
+E(TraitKeyword), // trait
+E(ImplKeyword), // impl
 E(PubKeyword), // pub
 E(PrivKeyword), // priv
-E(TraitKeyword), // trait
 E(IsKeyword), // is
 E(AsKeyword), // as
 
 E(FunctionKeyword), // function
 E(ReturnKeyword), // return
+E(OperatorKeyword), // operator
 
 E(IfKeyword), // if
 E(ElseKeyword), // else
@@ -124,7 +123,6 @@ E(ContinueKeyword), // continue
 E(VarKeyword), // var
 E(LetKeyword), // let
 E(MutKeyword), // mut
-E(StaticKeyword), // static
 E(NewKeyword), // new
 
 E(ThrowKeyword), // throw
