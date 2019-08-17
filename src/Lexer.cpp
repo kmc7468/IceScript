@@ -257,27 +257,65 @@ namespace ice {
 		m_IsIdentifier = false;
 		m_HasError = false;
 
-		return !result;
+		return result;
 	}
 
-	ISINLINE bool Lexer::ReadDigits(std::size_t& end) {
+	ISINLINE bool Lexer::ReadDigits(std::size_t& end, bool(*digitChecker1)(char), bool(*digitChecker2)(char), const char* base) {
+		bool hasError = false;
 		while (end < m_LineSource.size() &&
-			  (IsDigit(m_LineSource[end]) || m_LineSource[end] == '\'')) ++end;
-		if (m_LineSource[end - 1] == '\'') {
+			  (digitChecker1(m_LineSource[end]) || m_LineSource[end] == '\'')) {
+			if (!digitChecker2(m_LineSource[end])) {
+				m_Messages->AddError(Format("invalid digit '%' in % constant", { std::string(1, m_LineSource[end]), base }),
+									 *m_SourceName, m_Line, end,
+									 CreateMessageNoteLocation(m_LineSource, m_Line, end, 1));
+				hasError = true;
+			} else if (m_LineSource[end - 1] == '\'' && m_LineSource[end] == '\'') {
+				m_Messages->AddError("expected digit token after '\''", *m_SourceName, m_Line, end,
+									 CreateMessageNoteLocation(m_LineSource, m_Line, end, 1));
+				hasError = true;
+			}
+			++end;
+		}
+		if (hasError) {
+			m_Column = end - 1;
+			return m_HasError = true;
+		} else if (m_LineSource[end - 1] == '\'') {
 			m_Messages->AddError("expected digit token after '\''", *m_SourceName, m_Line, end - 1,
 								 CreateMessageNoteLocation(m_LineSource, m_Line, end - 1, 1));
 			m_Column = end - 1;
 			return m_HasError = true;
 		} else return false;
 	}
+	ISINLINE bool Lexer::ReadBinDigits(std::size_t& end) {
+		return ReadDigits(end, IsDigit, [](char c) {
+			return c <= '1';
+		}, "binary");
+	}
+	ISINLINE bool Lexer::ReadOctDigits(std::size_t& end) {
+		return ReadDigits(end, IsDigit, [](char c) {
+			return c <= '7';
+		}, "octal");
+	}
+	ISINLINE bool Lexer::ReadDecDigits(std::size_t& end) {
+		return ReadDigits(end, IsDigit, [](char) {
+			return true;
+		}, nullptr);
+	}
+	ISINLINE bool Lexer::ReadHexDigits(std::size_t& end) {
+		return ReadDigits(end, [](char c) {
+			return IsDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
+		}, [](char) {
+			return true;
+		}, nullptr);
+	}
 	ISINLINE bool Lexer::ReadScientificNotation(std::size_t& end) {
 		if (end == m_LineSource.size() || (m_LineSource[end] != 'e' && m_LineSource[end] != 'E')) return false;
 		else if (end + 1 < m_LineSource.size()) {
 			const std::size_t oldEnd = ++end;
-			if (ReadDigits(end)) return true;
+			if (ReadDecDigits(end)) return true;
 			else if (oldEnd == end) {
 				if (m_LineSource[oldEnd] == '+' || m_LineSource[oldEnd] == '-') {
-					return ReadDigits(++end);
+					return ReadDecDigits(++end);
 				} else {
 					m_Messages->AddError(Format("expected digit token after '%'", { std::string(1, m_LineSource[oldEnd]) }),
 										 *m_SourceName, m_Line, oldEnd,
@@ -294,66 +332,6 @@ namespace ice {
 			return m_HasError = true;
 		}
 	}
-	bool Lexer::ReadBinDigits(std::size_t& end) {
-		bool hasError = false;
-		while (end < m_LineSource.size() &&
-			  (IsDigit(m_LineSource[end]) || m_LineSource[end] == '\'')) {
-			if ('1' < m_LineSource[end]) {
-				m_Messages->AddError(Format("invalid digit '%' in binary constant", { std::string(1, m_LineSource[end]) }),
-									 *m_SourceName, m_Line, end,
-									 CreateMessageNoteLocation(m_LineSource, m_Line, end, 1));
-				hasError = true;
-			}
-			++end;
-		}
-		if (hasError) {
-			m_Column = end - 1;
-			return m_HasError = true;
-		} else if (m_LineSource[end - 1] == '\'') {
-			m_Messages->AddError("expected digit token after '\''", *m_SourceName, m_Line, end - 1,
-								 CreateMessageNoteLocation(m_LineSource, m_Line, end - 1, 1));
-			m_Column = end - 1;
-			return m_HasError = true;
-		} else return false;
-	}
-	bool Lexer::ReadOctDigits(std::size_t& end) {
-		bool hasError = false;
-		while (end < m_LineSource.size() &&
-			(IsDigit(m_LineSource[end]) || m_LineSource[end] == '\'')) {
-			if ('7' < m_LineSource[end]) {
-				m_Messages->AddError(Format("invalid digit '%' in octal constant", { std::string(1, m_LineSource[end]) }),
-									 *m_SourceName, m_Line, end,
-									 CreateMessageNoteLocation(m_LineSource, m_Line, end, 1));
-				hasError = true;
-			}
-			++end;
-		}
-		if (hasError) {
-			m_Column = end - 1;
-			return m_HasError = true;
-		}
-		else if (m_LineSource[end - 1] == '\'') {
-			m_Messages->AddError("expected digit token after '\''", *m_SourceName, m_Line, end - 1,
-								 CreateMessageNoteLocation(m_LineSource, m_Line, end - 1, 1));
-			m_Column = end - 1;
-			return m_HasError = true;
-		}
-		else return false;
-	}
-	bool Lexer::ReadHexDigits(std::size_t& end) {
-		while (end < m_LineSource.size() &&
-			  (IsDigit(m_LineSource[end]) ||
-			  ('A' <= m_LineSource[end] && m_LineSource[end] <= 'F') ||
-			  ('a' <= m_LineSource[end] && m_LineSource[end] <= 'f') ||
-				  m_LineSource[end] == '\'')) ++end;
-		if (m_LineSource[end - 1] == '\'') {
-			m_Messages->AddError("expected digit token after '\''", *m_SourceName, m_Line, end - 1,
-								 CreateMessageNoteLocation(m_LineSource, m_Line, end - 1, 1));
-			m_Column = end - 1;
-			return m_HasError = true;
-		}
-		else return false;
-	}
 	
 	ISINLINE void Lexer::LexInteger() {
 		if (m_LineSource[m_Column] != '0') {
@@ -364,17 +342,17 @@ namespace ice {
 	}
 	ISINLINE void Lexer::LexDecIntegerOrDecimal() {
 		std::size_t endColumn = m_Column + 1;
-		if (ReadDigits(endColumn)) return;
+		if (ReadDecDigits(endColumn)) return;
 		else if (endColumn < m_LineSource.size() && m_LineSource[endColumn] == '.') {
 			const std::size_t oldEndColumn = ++endColumn;
-			if (ReadDigits(endColumn)) return;
+			if (ReadDecDigits(endColumn)) return;
 			else if (oldEndColumn == endColumn) {
 				m_Messages->AddError("expected digit token after '.'", *m_SourceName, m_Line, endColumn - 1,
 									 CreateMessageNoteLocation(m_LineSource, m_Line, endColumn - 1, 1));
 				m_HasError = true;
 				if (m_LineSource[endColumn] == 'e' || m_LineSource[endColumn] == 'E') {
 					++endColumn;
-					ReadDigits(endColumn);
+					ReadDecDigits(endColumn);
 				}
 			} else if (!ReadScientificNotation(endColumn)) {
 				m_Tokens.push_back(Token(TokenType::Decimal, m_LineSource.substr(m_Column, endColumn - m_Column), m_Line, m_Column));
@@ -425,7 +403,7 @@ namespace ice {
 		else if (endColumn < m_LineSource.size()) {
 			const std::size_t oldEndColumn = endColumn;
 			if (m_LineSource[endColumn] == '.') {
-				ReadDigits(++endColumn);
+				ReadDecDigits(++endColumn);
 			} else goto done;
 			if (m_LineSource[endColumn] == 'e' || m_LineSource[endColumn] == 'E') {
 				ReadScientificNotation(endColumn);

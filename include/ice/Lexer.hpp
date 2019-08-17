@@ -83,11 +83,12 @@ namespace ice {
 		bool Lex(const std::string& sourceName, const std::string& source, Messages& messages);
 
 	private:
-		ISINLINE bool ReadDigits(std::size_t& end);
+		ISINLINE bool ReadDigits(std::size_t& end, bool(*digitChecker1)(char), bool(*digitChecker2)(char), const char* base);
+		ISINLINE bool ReadBinDigits(std::size_t& end);
+		ISINLINE bool ReadOctDigits(std::size_t& end);
+		ISINLINE bool ReadDecDigits(std::size_t& end);
+		ISINLINE bool ReadHexDigits(std::size_t& end);
 		ISINLINE bool ReadScientificNotation(std::size_t& end);
-		bool ReadBinDigits(std::size_t& end);
-		bool ReadOctDigits(std::size_t& end);
-		bool ReadHexDigits(std::size_t& end);
 
 		ISINLINE void LexInteger();
 		ISINLINE void LexDecIntegerOrDecimal();
