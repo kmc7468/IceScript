@@ -56,6 +56,17 @@ namespace ice {
 	private:
 		std::vector<Token> m_Tokens;
 
+		const std::string* m_SourceName = nullptr;
+		Messages* m_Messages = nullptr;
+		std::string m_LineSource;
+		std::size_t m_Line = 1,
+					m_Column = 0;
+		bool m_IsIdentifier = false;
+		std::size_t m_IdentifierBegin = 0,
+					m_IdentifierEnd = 0;
+		bool m_IsComment = false;
+		bool m_HasError = false;
+
 	public:
 		Lexer() noexcept = default;
 		Lexer(Lexer&& lexer) noexcept;
@@ -72,27 +83,29 @@ namespace ice {
 		bool Lex(const std::string& sourceName, const std::string& source, Messages& messages);
 
 	private:
-		ISINLINE void LexInteger(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
-								 bool& hasError, bool& isIncomplete);
-		ISINLINE void LexDecIntegerOrDecimal(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
-											 bool& hasError, bool& isIncomplete);
-		ISINLINE void LexOtherIntegers(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
-									   bool& hasError, bool& isIncomplete);
-		ISINLINE void LexStringOrCharacter(const std::string& sourceName, Messages& messages, const std::string& lineSource, std::size_t line, std::size_t& column,
-										   bool& hasError, bool& isIncomplete, char quotation);
+		ISINLINE bool ReadDigits(std::size_t& end);
+		ISINLINE bool ReadScientificNotation(std::size_t& end);
+		bool ReadBinDigits(std::size_t& end);
+		bool ReadOctDigits(std::size_t& end);
+		bool ReadHexDigits(std::size_t& end);
 
-		ISINLINE bool LexSpecialCharacters(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment);
-		ISINLINE void LexPlus(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexMinus(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexMultiply(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexDivide(const std::string& lineSource, std::size_t line, std::size_t& column, bool& isComment);
-		ISINLINE void LexModulo(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexAssign(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexNot(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexGreater(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexLess(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexBitAnd(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexBitOr(const std::string& lineSource, std::size_t line, std::size_t& column);
-		ISINLINE void LexBitXor(const std::string& lineSource, std::size_t line, std::size_t& column);
+		ISINLINE void LexInteger();
+		ISINLINE void LexDecIntegerOrDecimal();
+		ISINLINE void LexOtherIntegers();
+		ISINLINE void LexStringOrCharacter(char quotation);
+		ISINLINE bool LexSpecialCharacters();
+		ISINLINE void LexPlus();
+		ISINLINE void LexMinus();
+		ISINLINE void LexMultiply();
+		ISINLINE void LexDivide();
+		ISINLINE void LexModulo();
+		ISINLINE void LexAssign();
+		ISINLINE void LexNot();
+		ISINLINE void LexGreater();
+		ISINLINE void LexLess();
+		ISINLINE void LexBitAnd();
+		ISINLINE void LexBitOr();
+		ISINLINE void LexBitXor();
+		ISINLINE void AddIdentifier();
 	};
 }
