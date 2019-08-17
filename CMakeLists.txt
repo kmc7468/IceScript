@@ -13,8 +13,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "./bin")
 set(PYTHON3 "python3" CACHE STRING "Python3 interpreter")
 
 add_custom_command(OUTPUT "./src/detail/EastAsianWidthTable.txt"
-				   COMMAND ${PYTHON3} ./EastAsianWidthTableGenerator.py
-				   WORKING_DIRECTORY "./util")
+				   COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/util/EastAsianWidthTableGenerator.py ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set_source_files_properties("./src/detail/EastAsianWidthTable.txt" PROPERTIES GENERATED TRUE)
 set_source_files_properties("./src/Encoding.cpp" PROPERTIES OBJECT_DEPENDS "./src/detail/EastAsianWidthTable.txt")
 

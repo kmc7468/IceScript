@@ -2,9 +2,9 @@ import os
 import sys
 import urllib.request
 
-if not os.path.exists("../src/detail"):
-	os.mkdir("../src/detail")
-elif os.path.exists("../src/detail/EastAsianWidthTable.txt"):
+if not os.path.exists("{}/detail".format(sys.argv[1])):
+	os.mkdir("{}/detail".format(sys.argv[1]))
+elif os.path.exists("{}/EastAsianWidthTable.txt".format(sys.argv[1])):
 	sys.exit(0)
 
 res = urllib.request.urlopen("http://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt")
@@ -46,7 +46,7 @@ if res.getcode() == 200:
 			else:
 				data.append(((tableBegin, tableEnd), 'H'))
 
-	file = open("../src/detail/EastAsianWidthTable.txt", "w")
+	file = open("{}/detail/EastAsianWidthTable.txt".format(sys.argv[1]), "w")
 	
 	for element in data:
 		file.write("{{ {{ {}, {} }}, '{}' }},\n".format(element[0][0], element[0][1], element[1]))

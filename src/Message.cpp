@@ -3,7 +3,6 @@
 #include <ice/Encoding.hpp>
 
 #include <iostream>
-#include <map>
 #include <sstream>
 #include <utility>
 
