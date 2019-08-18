@@ -29,7 +29,7 @@ E(Assign), // =
 E(Equal), // ==
 E(NotEqual), // !=
 E(Greater), // >
-E(GreaterEqaul), // >=
+E(GreaterEqual), // >=
 E(Less), // <
 E(LessEqual), // <=
 E(And), // &&
@@ -127,7 +127,7 @@ E(NewKeyword), // new
 E(ThrowKeyword), // throw
 E(TryKeyword), // try
 E(CatchKeyword), // catch
+E(FinallyKeyword), // finally
 
 E(SizeOfKeyword), // sizeof
 E(TypeOfKeyword), // typeof
-E(NameOfKeyword), // nameof

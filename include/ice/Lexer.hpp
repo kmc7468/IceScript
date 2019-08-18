@@ -3,6 +3,7 @@
 #include <ice/Message.hpp>
 #include <ice/detail/Config.hpp>
 
+#include <array>
 #include <cstddef>
 #include <string>
 #include <unordered_map>
@@ -52,6 +53,8 @@ namespace ice {
 	class Lexer final {
 	private:
 		static const std::unordered_map<std::string, TokenType> m_Keywords;
+		static const std::unordered_map<char, const std::array<TokenType, 5>> m_Operators;
+		static const std::unordered_map<TokenType, std::string> m_OperatorWords;
 
 	private:
 		std::vector<Token> m_Tokens;
@@ -100,18 +103,6 @@ namespace ice {
 		ISINLINE void LexOtherIntegers();
 		ISINLINE void LexStringOrCharacter(char quotation);
 		ISINLINE bool LexSpecialCharacters();
-		ISINLINE void LexPlus();
-		ISINLINE void LexMinus();
-		ISINLINE void LexMultiply();
-		ISINLINE void LexDivide();
-		ISINLINE void LexModulo();
-		ISINLINE void LexAssign();
-		ISINLINE void LexNot();
-		ISINLINE void LexGreater();
-		ISINLINE void LexLess();
-		ISINLINE void LexBitAnd();
-		ISINLINE void LexBitOr();
-		ISINLINE void LexBitXor();
-		ISINLINE void AddIdentifier();
+		ISINLINE bool AddIdentifier();
 	};
 }

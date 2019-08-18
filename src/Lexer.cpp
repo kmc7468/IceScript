@@ -84,73 +84,160 @@ namespace ice {
 
 namespace ice {
 	const std::unordered_map<std::string, TokenType> Lexer::m_Keywords = {
-		{ "module", TokenType::ModuleKeyword },
-		{ "import", TokenType::ImportKeyword },
+#define EOrg(type1, type2, str) { str, TokenType::type1##type2 }
+#define E(type, str) EOrg(type, Keyword, str)
+		E(Module, "module"),
+		E(Import, "import"),
+		
+		E(Int8, "int8"),
+		E(Int16, "int16"),
+		E(Int32, "int32"),
+		E(Int64, "int64"),
+		E(Int128, "int128"),
+		E(IntPtr, "intptr"),
+		E(UInt8, "uint8"),
+		E(UInt16, "uint16"),
+		E(UInt32, "uint32"),
+		E(UInt64, "uint64"),
+		E(UInt128, "uint128"),
+		E(UIntPtr, "uintptr"),
+		E(Float32, "float32"),
+		E(Float64, "float64"),
+		E(Number, "number"),
+		E(Void, "void"),
+		E(Bool, "bool"),
+		E(True, "true"),
+		E(False, "false"),
+		E(Char, "char"),
+		E(Char8, "char8"),
+		E(String, "string"),
+		E(String8, "string8"),
+		E(Null, "null"),
+		E(Any, "any"),
+		E(Object, "object"),
 
-		{ "int8", TokenType::Int8Keyword },
-		{ "int16", TokenType::Int16Keyword },
-		{ "int32", TokenType::Int32Keyword },
-		{ "int64", TokenType::Int64Keyword },
-		{ "int128", TokenType::Int128Keyword },
-		{ "intptr", TokenType::IntPtrKeyword },
-		{ "uint8", TokenType::UInt8Keyword },
-		{ "uint16", TokenType::UInt16Keyword },
-		{ "uint32", TokenType::UInt32Keyword },
-		{ "uint64", TokenType::UInt64Keyword },
-		{ "uint128", TokenType::UInt128Keyword },
-		{ "uintptr", TokenType::UIntPtrKeyword },
-		{ "float32", TokenType::Float32Keyword },
-		{ "float64", TokenType::Float64Keyword },
-		{ "number", TokenType::NumberKeyword },
-		{ "void", TokenType::VoidKeyword },
-		{ "bool", TokenType::BoolKeyword },
-		{ "true", TokenType::TrueKeyword },
-		{ "false", TokenType::FalseKeyword },
-		{ "char", TokenType::CharKeyword },
-		{ "char8", TokenType::Char8Keyword },
-		{ "string", TokenType::StringKeyword },
-		{ "string8", TokenType::String8Keyword },
-		{ "null", TokenType::NullKeyword },
-		{ "any", TokenType::AnyKeyword },
-		{ "object", TokenType::ObjectKeyword },
+		E(Enum, "enum"),
+		E(Struct, "struct"),
+		E(LowerSelf, "self"),
+		E(UpperSelf, "Self"),
+		E(Trait, "trait"),
+		E(Impl, "impl"),
+		E(Pub, "pub"),
+		E(Priv, "priv"),
+		E(Is, "is"),
+		E(As, "as"),
 
-		{ "enum", TokenType::EnumKeyword },
-		{ "struct", TokenType::StructKeyword },
-		{ "self", TokenType::LowerSelfKeyword },
-		{ "Self", TokenType::UpperSelfKeyword },
-		{ "trait", TokenType::TraitKeyword },
-		{ "impl", TokenType::ImplKeyword },
-		{ "pub", TokenType::PubKeyword },
-		{ "priv", TokenType::PrivKeyword },
-		{ "is", TokenType::IsKeyword },
-		{ "as", TokenType::AsKeyword },
+		E(Function, "function"),
+		E(Return, "return"),
+		E(Operator, "operator"),
 
-		{ "function", TokenType::FunctionKeyword },
-		{ "return", TokenType::ReturnKeyword },
-		{ "operator", TokenType::OperatorKeyword },
+		E(If, "if"),
+		E(Else, "else"),
+		E(Switch, "switch"),
+		E(Case, "case"),
+		E(For, "for"),
+		E(While, "while"),
+		E(Do, "do"),
+		E(Break, "break"),
+		E(Continue, "continue"),
 
-		{ "if", TokenType::IfKeyword },
-		{ "else", TokenType::ElseKeyword },
-		{ "switch", TokenType::SwitchKeyword },
-		{ "case", TokenType::CaseKeyword },
-		{ "for", TokenType::ForKeyword },
-		{ "while", TokenType::WhileKeyword },
-		{ "do", TokenType::DoKeyword },
-		{ "break", TokenType::BreakKeyword },
-		{ "continue", TokenType::ContinueKeyword },
+		E(Var, "var"),
+		E(Let, "let"),
+		E(Mut, "mut"),
+		E(New, "new"),
 
-		{ "var", TokenType::VarKeyword },
-		{ "let", TokenType::LetKeyword },
-		{ "mut", TokenType::MutKeyword },
-		{ "new", TokenType::NewKeyword },
+		E(Throw, "throw"),
+		E(Try, "try"),
+		E(Catch, "catch"),
+		E(Finally, "finally"),
 
-		{ "throw", TokenType::ThrowKeyword },
-		{ "try", TokenType::TryKeyword },
-		{ "catch", TokenType::CatchKeyword },
+		E(SizeOf, "sizeof"),
+		E(TypeOf, "typeof"),
+#undef EOrg
+#undef E
+	};
+	const std::unordered_map<char, const std::array<TokenType, 5>> Lexer::m_Operators = {
+		{ '+', { TokenType::Plus, TokenType::Increment, TokenType::PlusAssign } },
+		{ '-', { TokenType::Minus, TokenType::Decrement, TokenType::MinusAssign, TokenType::None, TokenType::RightwardsArrow } },
+		{ '*', { TokenType::Multiply, TokenType::Exponent, TokenType::MultiplyAssign, TokenType::ExponentAssign } },
+		{ '/', { TokenType::Divide, TokenType::None, TokenType::DivideAssign } },
+		{ '%', { TokenType::Modulo, TokenType::None, TokenType::ModuloAssign } },
+		{ '=', { TokenType::Assign, TokenType::Equal, TokenType::Equal, TokenType::None, TokenType::RightwardsDoubleArrow } },
+		{ '!', { TokenType::Not, TokenType::None, TokenType::NotEqual } },
+		{ '>', { TokenType::Greater, TokenType::BitLeftShift, TokenType::GreaterEqual, TokenType::BitLeftShiftAssign } },
+		{ '<', { TokenType::Less, TokenType::BitRightShift, TokenType::LessEqual, TokenType::BitRightShiftAssign } },
+		{ '&', { TokenType::BitAnd, TokenType::And, TokenType::BitAndAssign } },
+		{ '|', { TokenType::BitOr, TokenType::Or, TokenType::BitOrAssign } },
+		{ '^', { TokenType::BitXor, TokenType::None, TokenType::BitXorAssign } },
+		{ '~', { TokenType::BitNot } },
+		{ '{', { TokenType::LeftBrace } },
+		{ '}', { TokenType::RightBrace } },
+		{ '(', { TokenType::LeftParen } },
+		{ ')', { TokenType::RightParen } },
+		{ '[', { TokenType::LeftBigParen } },
+		{ ']', { TokenType::RightBigParen } },
+		{ '.', { TokenType::Dot } },
+		{ ',', { TokenType::Comma } },
+		{ ';', { TokenType::Semicolon } },
+		{ ':', { TokenType::Colon } },
+		{ '?', { TokenType::Question } },
+	};
+	const std::unordered_map<TokenType, std::string> Lexer::m_OperatorWords = {
+#define E(type, str) { TokenType:: type, str }
+		E(Plus, "+"),
+		E(Increment, "++"),
+		E(PlusAssign, "+="),
+		E(Minus, "-"),
+		E(Decrement, "--"),
+		E(MinusAssign, "-="),
+		E(Multiply, "*"),
+		E(MultiplyAssign, "*="),
+		E(Divide, "/"),
+		E(DivideAssign, "/="),
+		E(Modulo, "%"),
+		E(ModuloAssign, "%="),
+		E(Exponent, "**"),
+		E(ExponentAssign, "**="),
 
-		{ "sizeof", TokenType::SizeOfKeyword },
-		{ "typeof", TokenType::TypeOfKeyword },
-		{ "nameof", TokenType::NameOfKeyword },
+		E(Assign, "="),
+		E(Equal, "=="),
+		E(NotEqual, "!="),
+		E(Greater, ">"),
+		E(GreaterEqual, ">="),
+		E(Less, "<"),
+		E(LessEqual, "<="),
+		E(And, "&&"),
+		E(Or, "||"),
+		E(Not, "!"),
+
+		E(BitAnd, "&"),
+		E(BitAndAssign, "&="),
+		E(BitOr, "|"),
+		E(BitOrAssign, "|="),
+		E(BitXor, "^"),
+		E(BitXorAssign, "^="),
+		E(BitNot, "~"),
+		E(BitLeftShift, "<<"),
+		E(BitLeftShiftAssign, "<<="),
+		E(BitRightShift, ">>"),
+		E(BitRightShiftAssign, ">>="),
+
+		E(RightwardsArrow, "->"),
+		E(RightwardsDoubleArrow, "=>"),
+
+		E(LeftBrace, "{"),
+		E(RightBrace, "}"),
+		E(LeftParen, "("),
+		E(RightParen, ")"),
+		E(LeftBigParen, "["),
+		E(RightBigParen, "]"),
+
+		E(Dot, "."),
+		E(Comma, ","),
+		E(Semicolon, ";"),
+		E(Colon, ":"),
+		E(Question, "?"),
+#undef E
 	};
 	
 	Lexer::Lexer(Lexer&& lexer) noexcept
@@ -257,11 +344,8 @@ namespace ice {
 					m_IdentifierBegin = m_Column;
 					m_IdentifierEnd = m_Column + m_CharLength;
 				}
-			} else {
-				AddIdentifier();
-				if (m_Tokens.size() > 1) {
-					std::iter_swap(m_Tokens.end() - 1, m_Tokens.end() - 2);
-				}
+			} else if (AddIdentifier() && m_Tokens.size() > 1) {
+				std::iter_swap(m_Tokens.end() - 1, m_Tokens.end() - 2);
 			}
 		}
 		return !m_IsComment;
@@ -445,284 +529,31 @@ namespace ice {
 		m_Column = endColumn - 1;
 	}
 	ISINLINE bool Lexer::LexSpecialCharacters() {
-		switch (m_LineSource[m_Column]) {
-#define caseOrg(value, function) case value: function(); break
-#define case(value, function) caseOrg(value, function)
-		case('+', LexPlus);
-		case('-', LexMinus);
-		case('*', LexMultiply);
-#undef case
-		case '/':
-			LexDivide();
-			break;
-#define case(value, function) caseOrg(value, function)
-		case('%', LexModulo);
-		case('=', LexAssign);
-		case('!', LexNot);
-		case('>', LexGreater);
-		case('<', LexLess);
-		case('&', LexBitAnd);
-		case('|', LexBitOr);
-		case('^', LexBitXor);
-#undef caseOrg
-#undef case
-#define caseOrg(value, tokenType) case value: m_Tokens.push_back(Token(TokenType::tokenType, std::string(1, value), m_Line, m_Column)); break
-#define case(value, tokenType) caseOrg(value, tokenType)
-		case('~', BitNot);
-		case('{', LeftBrace);
-		case('}', RightBrace);
-		case('(', LeftParen);
-		case(')', RightParen);
-		case('[', LeftBigParen);
-		case(']', RightBigParen);
-		case('.', Dot);
-		case(',', Comma);
-		case(';', Semicolon);
-		case(':', Colon);
-		case('?', Question);
-#undef case
-		default:
-			return true;
+		const auto iter = m_Operators.find(m_Char);
+		if (iter == m_Operators.end()) return true;
+
+		int index = 0;
+		std::size_t column = m_Column + 1;
+		if (column < m_LineSource.size()) {
+			const char nextChar = m_LineSource[column];
+			if (m_Char == nextChar) {
+				if (++column < m_LineSource.size() && m_LineSource[column] == '=' &&
+					iter->second[3] != TokenType::None) {
+					index = 3;
+					++column;
+				} else if (iter->second[1] != TokenType::None) {
+					index = 1;
+				}
+			} else if (nextChar == '=' && iter->second[2] != TokenType::None) ++column, index = 2;
+			  else if (nextChar == '>' && iter->second[4] != TokenType::None) ++column, index = 4;
 		}
+
+		m_Tokens.push_back(Token(iter->second[index], m_OperatorWords.at(iter->second[index]), m_Line, m_Column));
+		m_Column = column - 1;
 		return false;
 	}
-	ISINLINE void Lexer::LexPlus() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '+':
-				m_Tokens.push_back(Token(TokenType::Increment, "++", m_Line, m_Column));
-				break;
-
-			case '=':
-				m_Tokens.push_back(Token(TokenType::PlusAssign, "+=", m_Line, m_Column));
-				break;
-
-			default: goto plus;
-			}
-			++m_Column;
-		} else {
-		plus:
-			m_Tokens.push_back(Token(TokenType::Plus, "+", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexMinus() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '-':
-				m_Tokens.push_back(Token(TokenType::Decrement, "--", m_Line, m_Column));
-				break;
-
-			case '=':
-				m_Tokens.push_back(Token(TokenType::MinusAssign, "-=", m_Line, m_Column));
-				break;
-
-			case '>':
-				m_Tokens.push_back(Token(TokenType::RightwardsArrow, "->", m_Line, m_Column));
-				break;
-
-			default: goto minus;
-			}
-			++m_Column;
-		} else {
-		minus:
-			m_Tokens.push_back(Token(TokenType::Minus, "-", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexMultiply() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '*':
-				if (m_Column + 2 < m_LineSource.size() && m_LineSource[m_Column + 2] == '=') {
-					m_Tokens.push_back(Token(TokenType::ExponentAssign, "**=", m_Line, m_Column));
-					++m_Column;
-				} else {
-					m_Tokens.push_back(Token(TokenType::Exponent, "**", m_Line, m_Column));
-				}
-				break;
-
-			case '=':
-				m_Tokens.push_back(Token(TokenType::MultiplyAssign, "*=", m_Line, m_Column));
-				break;
-
-			default: goto multiply;
-			}
-			++m_Column;
-		} else {
-		multiply:
-			m_Tokens.push_back(Token(TokenType::Multiply, "*", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexDivide() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '/':
-				m_IsComment = true;
-				break;
-
-			case '=':
-				m_Tokens.push_back(Token(TokenType::DivideAssign, "/=", m_Line, m_Column));
-				break;
-
-			default: goto divide;
-			}
-			++m_Column;
-		} else {
-		divide:
-			m_Tokens.push_back(Token(TokenType::Divide, "/", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexModulo() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '=':
-				m_Tokens.push_back(Token(TokenType::ModuloAssign, "%=", m_Line, m_Column));
-				break;
-
-			default: goto modulo;
-			}
-			++m_Column;
-		} else {
-		modulo:
-			m_Tokens.push_back(Token(TokenType::Modulo, "%", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexAssign() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '=':
-				m_Tokens.push_back(Token(TokenType::Equal, "==", m_Line, m_Column));
-				break;
-
-			case '>':
-				m_Tokens.push_back(Token(TokenType::RightwardsDoubleArrow, "=>", m_Line, m_Column));
-				break;
-
-			default: goto assign;
-			}
-			++m_Column;
-		} else {
-		assign:
-			m_Tokens.push_back(Token(TokenType::Assign, "=", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexNot() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '=':
-				m_Tokens.push_back(Token(TokenType::NotEqual, "!=", m_Line, m_Column));
-				break;
-
-			default: goto not2;
-			}
-			++m_Column;
-		} else {
-		not2:
-			m_Tokens.push_back(Token(TokenType::Not, "!", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexGreater() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '=':
-				m_Tokens.push_back(Token(TokenType::GreaterEqaul, ">=", m_Line, m_Column));
-				break;
-
-			case '>':
-				if (m_Column + 2 < m_LineSource.size() && m_LineSource[m_Column + 2] == '=') {
-					m_Tokens.push_back(Token(TokenType::BitRightShiftAssign, ">>=", m_Line, m_Column));
-					++m_Column;
-				} else {
-					m_Tokens.push_back(Token(TokenType::BitRightShift, ">>", m_Line, m_Column));
-				}
-				break;
-
-			default: goto greater;
-			}
-			++m_Column;
-		} else {
-		greater:
-			m_Tokens.push_back(Token(TokenType::Greater, ">", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexLess() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '=':
-				m_Tokens.push_back(Token(TokenType::LessEqual, "<=", m_Line, m_Column));
-				break;
-
-			case '<':
-				if (m_Column + 2 < m_LineSource.size() && m_LineSource[m_Column + 2] == '=') {
-					m_Tokens.push_back(Token(TokenType::BitLeftShiftAssign, "<<=", m_Line, m_Column));
-					++m_Column;
-				} else {
-					m_Tokens.push_back(Token(TokenType::BitLeftShift, "<<", m_Line, m_Column));
-				}
-				break;
-
-			default: goto less;
-			}
-			++m_Column;
-		} else {
-		less:
-			m_Tokens.push_back(Token(TokenType::Less, "<", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexBitAnd() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '=':
-				m_Tokens.push_back(Token(TokenType::BitAndAssign, "&=", m_Line, m_Column));
-				break;
-
-			case '&':
-				m_Tokens.push_back(Token(TokenType::And, "&&", m_Line, m_Column));
-				break;
-
-			default: goto bitand2;
-			}
-			++m_Column;
-		} else {
-		bitand2:
-			m_Tokens.push_back(Token(TokenType::BitAnd, "&", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexBitOr() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '=':
-				m_Tokens.push_back(Token(TokenType::BitOrAssign, "|=", m_Line, m_Column));
-				break;
-
-			case '|':
-				m_Tokens.push_back(Token(TokenType::Or, "||", m_Line, m_Column));
-				break;
-
-			default: goto bitor2;
-			}
-			++m_Column;
-		} else {
-		bitor2:
-			m_Tokens.push_back(Token(TokenType::BitOr, "|", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::LexBitXor() {
-		if (m_Column + 1 < m_LineSource.size()) {
-			switch (m_LineSource[m_Column + 1]) {
-			case '=':
-				m_Tokens.push_back(Token(TokenType::BitXorAssign, "^=", m_Line, m_Column));
-				break;
-
-			default: goto bitxor2;
-			}
-			++m_Column;
-		} else {
-		bitxor2:
-			m_Tokens.push_back(Token(TokenType::BitXor, "^", m_Line, m_Column));
-		}
-	}
-	ISINLINE void Lexer::AddIdentifier() {
-		if (!m_IsIdentifier) return;
+	ISINLINE bool Lexer::AddIdentifier() {
+		if (!m_IsIdentifier) return false;
 
 		m_IsIdentifier = false;
 		m_Tokens.push_back(Token(TokenType::Identifer, m_LineSource.substr(m_IdentifierBegin, m_IdentifierEnd - m_IdentifierBegin),
@@ -730,5 +561,6 @@ namespace ice {
 		if (auto iter = m_Keywords.find(m_Tokens.back().Word()); iter != m_Keywords.end()) {
 			m_Tokens.back().Type(iter->second);
 		}
+		return true;
 	}
 }
