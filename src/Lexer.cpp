@@ -3,6 +3,7 @@
 #include <ice/Encoding.hpp>
 #include <ice/Utility.hpp>
 
+#include <algorithm>
 #include <sstream>
 #include <utility>
 
@@ -151,7 +152,7 @@ namespace ice {
 		{ "typeof", TokenType::TypeOfKeyword },
 		{ "nameof", TokenType::NameOfKeyword },
 	};
-
+	
 	Lexer::Lexer(Lexer&& lexer) noexcept
 		: m_Tokens(std::move(lexer.m_Tokens)) {
 	}
@@ -178,7 +179,6 @@ namespace ice {
 		m_SourceName = &sourceName;
 		m_Messages = &messages;
 
-		bool isNoEOLToken = false;
 		std::size_t m_LineBegin = 0;
 		std::size_t nextLineBegin = source.find('\n');
 
@@ -187,64 +187,17 @@ namespace ice {
 			if (!m_LineSource.empty() && m_LineSource.back() == '\r') {
 				m_LineSource.erase(m_LineSource.end() - 1);
 			}
-
-			char c;
-			int cLength;
-			for (m_Column = 0; m_Column < m_LineSource.size(); m_Column += cLength) {
-				c = m_LineSource[m_Column];
-				cLength = GetCodepointLength(c);
-
-				if (!m_IsIdentifier && IsDigit(c)) {
-					LexInteger();
-				} else if (c == '"' || c == '\'') {
-					AddIdentifier();
-					LexStringOrCharacter(c);
-				} else if (IsWhitespace(c)) {
-					AddIdentifier();
-				} else if (c == '\r') {
-					AddIdentifier();
-					m_Messages->AddError("expected EOL", *m_SourceName, m_Line, m_Column,
-										 CreateMessageNoteLocation(m_LineSource, m_Line, m_Column, 1));
-					m_HasError = true;
-				} else if (c == '\\') {
-					if (m_Column + 1 != m_LineSource.size()) {
-						AddIdentifier();
-						m_Messages->AddError("unexpected carriage return token", *m_SourceName, m_Line, m_Column);
-						m_HasError = true;
-					} else {
-						isNoEOLToken = true;
-					}
-				} else {
-					if (LexSpecialCharacters()) {
-						switch (c) {
-						case '`':
-						case '@':
-						case '#':
-						case '$':
-							m_HasError = true;
-							AddIdentifier();
-							continue;
-						}
-
-						if (m_IsIdentifier) {
-							m_IdentifierEnd += cLength;
-						} else {
-							m_IsIdentifier = true;
-							m_IdentifierBegin = m_Column;
-							m_IdentifierEnd = m_Column + cLength;
-						}
-					} else {
-						AddIdentifier();
-						if (m_IsComment) goto newLine;
-					}
-				}
+			
+			for (m_Column = 0; m_Column < m_LineSource.size(); m_Column += m_CharLength) {
+				m_Char = m_LineSource[m_Column];
+				m_CharLength = GetCodepointLength(m_Char);
+				if (!Next()) break;
 			}
 
-		newLine:
 			AddIdentifier();
-			if (!isNoEOLToken) {
+			if (!m_IsNoEOLToken) {
 				m_Tokens.push_back(Token(TokenType::EOL, "", m_Line, m_LineSource.size()));
-				isNoEOLToken = false;
+				m_IsNoEOLToken = false;
 			}
 			++m_Line;
 			m_IsComment = false;
@@ -255,9 +208,63 @@ namespace ice {
 		const bool result = !m_HasError;
 		m_Line = 1;
 		m_IsIdentifier = false;
+		m_IsNoEOLToken = false;
 		m_HasError = false;
 
 		return result;
+	}
+
+	ISINLINE bool Lexer::Next() {
+		if (!m_IsIdentifier && IsDigit(m_Char)) {
+			LexInteger();
+		} else if (m_Char == '"' || m_Char == '\'') {
+			AddIdentifier();
+			LexStringOrCharacter(m_Char);
+		} else if (IsWhitespace(m_Char)) {
+			AddIdentifier();
+		} else if (m_Char == '\\') {
+			AddIdentifier();
+			m_Messages->AddError("unexpected EOL", *m_SourceName, m_Line, m_Column,
+								 CreateMessageNoteLocation(m_LineSource, m_Line, m_Column, 1));
+			m_HasError = true;
+		} else if (m_Char == '\r') {
+			if (m_Column + 1 != m_LineSource.size()) {
+				AddIdentifier();
+				m_Messages->AddError("unexpected carriage return token", *m_SourceName, m_Line, m_Column);
+				m_Messages->AddNote("is the EOL in this source file a CR?", *m_SourceName);
+				m_HasError = true;
+			} else {
+				m_IsNoEOLToken = true;
+			}
+		} else {
+			if (LexSpecialCharacters()) {
+				switch (m_Char) {
+				case '`':
+				case '@':
+				case '#':
+				case '$':
+					AddIdentifier();
+					m_Messages->AddError("unexpected invalid token", *m_SourceName, m_Line, m_Column,
+										 CreateMessageNoteLocation(m_LineSource, m_Line, m_Column, 1));
+					m_HasError = true;
+					return true;
+				}
+
+				if (m_IsIdentifier) {
+					m_IdentifierEnd += m_CharLength;
+				} else {
+					m_IsIdentifier = true;
+					m_IdentifierBegin = m_Column;
+					m_IdentifierEnd = m_Column + m_CharLength;
+				}
+			} else {
+				AddIdentifier();
+				if (m_Tokens.size() > 1) {
+					std::iter_swap(m_Tokens.end() - 1, m_Tokens.end() - 2);
+				}
+			}
+		}
+		return !m_IsComment;
 	}
 
 	ISINLINE bool Lexer::ReadDigits(std::size_t& end, bool(*digitChecker1)(char), bool(*digitChecker2)(char), const char* base) {

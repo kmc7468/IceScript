@@ -68,6 +68,7 @@ namespace ice {
 		void Print() const;
 
 		void Add(Message message);
+		void AddNote(const std::string& description, const std::string& source);
 		void AddNote(const std::string& description, const std::string& source, std::size_t line, std::size_t column);
 		void AddNote(const std::string& description, const std::string& source, std::size_t line, std::size_t column, const std::string& note);
 		void AddWarning(const std::string& description, const std::string& source, std::size_t line, std::size_t column);

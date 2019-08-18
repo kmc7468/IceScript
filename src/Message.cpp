@@ -183,6 +183,13 @@ namespace ice {
 	void Messages::Add(Message message) {
 		m_Messages.push_back(std::move(message));
 	}
+	void Messages::AddNote(const std::string& description, const std::string& source) {
+		if (source.empty()) {
+			Add(Message(MessageType::Note, description, CreateMessageLocation(source)));
+		} else {
+			Add(Message(MessageType::Note, description));
+		}
+	}
 	void Messages::AddNote(const std::string& description, const std::string& source, std::size_t line, std::size_t column) {
 		AddNote(description, source, line, column, "");
 	}

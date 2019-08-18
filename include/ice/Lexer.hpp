@@ -65,7 +65,10 @@ namespace ice {
 		std::size_t m_IdentifierBegin = 0,
 					m_IdentifierEnd = 0;
 		bool m_IsComment = false;
+		bool m_IsNoEOLToken = false;
 		bool m_HasError = false;
+		char m_Char = 0;
+		int m_CharLength = 0;
 
 	public:
 		Lexer() noexcept = default;
@@ -83,6 +86,8 @@ namespace ice {
 		bool Lex(const std::string& sourceName, const std::string& source, Messages& messages);
 
 	private:
+		ISINLINE bool Next();
+		
 		ISINLINE bool ReadDigits(std::size_t& end, bool(*digitChecker1)(char), bool(*digitChecker2)(char), const char* base);
 		ISINLINE bool ReadBinDigits(std::size_t& end);
 		ISINLINE bool ReadOctDigits(std::size_t& end);
