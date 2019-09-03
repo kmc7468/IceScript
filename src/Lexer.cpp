@@ -459,7 +459,6 @@ namespace ice {
 	}
 	ISINLINE void Lexer::LexOtherIntegers() {
 		if (m_Column + 1 == m_LineSource.size()) {
-		zero:
 			m_Tokens.push_back(Token(TokenType::DecInteger, "0", m_Line, m_Column));
 			return;
 		}
@@ -482,12 +481,17 @@ namespace ice {
 			break;
 
 		default:
-			if (IsDigit(m_LineSource[endColumn])) {
+			ReadDecDigits(endColumn);
+			if (endColumn < m_LineSource.size() &&
+			   (m_LineSource[endColumn] == '.' || m_LineSource[endColumn] == 'e' || m_LineSource[endColumn] == 'E')) {
+				LexDecIntegerOrDecimal();
+				return;
+			} else {
 				digitReader = &Lexer::ReadOctDigits;
 				base = TokenType::OctInteger;
 				--endColumn;
 				break;
-			} else goto zero;
+			}
 		}
 
 		if ((this->*digitReader)(++endColumn)) return;
